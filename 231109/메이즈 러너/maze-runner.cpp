@@ -115,7 +115,7 @@ void rotate_rect(rect rec) {
 
 	for (int y = ty; y <= by; y++)
 		for (int x = tx; x <= bx; x++)
-			if (A[y][x] > 0) A[x][y]--;
+			if (A[y][x] > 0) A[y][x]--;
 
 	for (int y = ty; y <= by; y++)
 		for (int x = tx; x <= bx; x++) {
@@ -160,6 +160,7 @@ int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
 
+	freopen("input.txt", "r", stdin);
 	cin >> N >> M >> K;
 	
 	for (int i = 0; i < N; i++)
