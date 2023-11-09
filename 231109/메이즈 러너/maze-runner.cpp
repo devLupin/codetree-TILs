@@ -160,7 +160,6 @@ int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
 
-	freopen("input.txt", "r", stdin);
 	cin >> N >> M >> K;
 	
 	for (int i = 0; i < N; i++)
