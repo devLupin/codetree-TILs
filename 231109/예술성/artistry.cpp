@@ -1,129 +1,105 @@
 #include <iostream>
+#include <vector>
 #include <queue>
 #include <cstring>
-#include <vector>
+
+#define MAX 30
+
 using namespace std;
-using pii = pair<int, int>;
 
 struct pos {
-    int y, x, group_num;
+    int x, y;
 };
 
-vector<int> nums_group;
-vector<pos> adj[30*30];
-vector<int> group_val;
+int dx[4] = { -1,0,1,0 };
+int dy[4] = { 0,1,0,-1 };
 
-int group_num, ans;
-int N, A[30][30], group[30][30];
-const int dy[] = { -1,1,0,0 };
-const int dx[] = { 0,0,-1,1 };
+int N;
+int map[MAX][MAX] = { 0, };
+int group[MAX][MAX] = { 0, };
+int touch[MAX * MAX][MAX * MAX] = { 0, };
 
-void bfs(int y, int x) {
-    queue<pii> q;
-    bool vis[30][30] = { false, };
-    int idx = group_num - 1;
+void calcTouch()
+{
+    memset(touch, 0, sizeof(touch));
 
-    q.push({ y,x });
-    vis[y][x] = true;
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            int from = group[i][j];
+            for (int k = 1; k <= 2; k++) {
+                int nx = i + dx[k];
+                int ny = j + dy[k];
 
-    group[y][x] = group_num; 
-    nums_group.push_back(1);
-    group_val.push_back(A[y][x]);
-
-    while (!q.empty()) {
-        pii cur = q.front();
-        q.pop();
-
-        for (int dir = 0; dir < 4; dir++) {
-            int ny = cur.first + dy[dir];
-            int nx = cur.second + dx[dir];
-
-            if (ny < 0 || nx < 0 || ny >= N || nx >= N) continue;
-
-            if (A[ny][nx] == A[y][x]) {
-                if (!vis[ny][nx]) {
-                    group[ny][nx] = group_num;
-                    nums_group[idx]++;
-                    q.push({ ny,nx });
-                    vis[ny][nx] = true;
-                }
+                if (nx < 0 || ny < 0 || nx >= N || ny >= N || group[nx][ny] == from)   continue;
+                touch[from][group[nx][ny]]++;
             }
-            else
-                adj[idx].push_back({ ny,nx,-1 });
         }
     }
 }
 
-void init() {
-    group_val.clear();
-    group_num = 1;
-    nums_group.clear();
-    for (int i = 0; i < 30; i++) {
-        adj[i].clear();
-        memset(group[i], 0, sizeof(group[i]));
-    }
-}
+int calcScore()
+{
+    memset(group, 0, sizeof(group));
 
-void get_info() {
+    int groupCnt = 1;
+    int groupSize[MAX * MAX] = { 0, };
+    int groupIdx[MAX * MAX] = { 0, };
+    queue<pos> q;
+
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             if (group[i][j] == 0) {
-                bfs(i, j);
-                group_num++;
+                q.push({ i,j });
+                group[i][j] = groupCnt;
+                groupIdx[groupCnt] = map[i][j];
+                groupCnt += 1;
             }
-        }
-    }
+            while (!q.empty()) {
+                int x = q.front().x;
+                int y = q.front().y;
+                q.pop();
 
-    int idx = group_num - 1;
+                groupSize[group[x][y]]++;
 
-    for (int i = 0; i < idx; i++) {
-        for (int j = 0; j < adj[i].size(); j++) {
-            auto cur = adj[i][j];
-            adj[i][j].group_num = group[cur.y][cur.x];
-        }
-    }
+                for (int k = 0; k < 4; k++) {
+                    int nx = x + dx[k];
+                    int ny = y + dy[k];
 
-    bool vis[30*30][30*30] = { false, };
+                    if (nx < 0 || ny < 0 || nx >= N || ny >= N || group[nx][ny] != 0)   continue;
+                    if (map[nx][ny] != map[x][y])   continue;
 
-    for (int i = 0; i < idx; i++) {
-        for (int j = i + 1; j < idx; j++) {
-            if (vis[i][j]) continue;
-
-            int val = -1;
-            int cnt = 0;
-            for (auto nxt : adj[i]) {
-                if (nxt.group_num == j+1) {
-                    val = j;
-                    cnt++;
+                    q.push({ nx,ny });
+                    group[nx][ny] = group[x][y];
                 }
             }
-            if (cnt > 0) {
-                int add = (nums_group[i] + nums_group[val]);
-                int mul = group_val[i] * group_val[val] * cnt;
-                vis[i][val] = true;
-
-                ans += add * mul;
-            }
         }
     }
 
+    calcTouch(); // 맞닿는 변 개수 계산
+    int score = 0;
+    for (int i = 1; i < groupCnt; i++) {
+        for (int j = i + 1; j <= groupCnt; j++) {
+            score += (groupSize[i] + groupSize[j]) * (touch[i][j] + touch[j][i]) * groupIdx[i] * groupIdx[j];
+        }
+    }
+    return score;
 }
 
 void rotate(int x, int y)
 {
     int len = (N - 1) / 2;
 
-    int tmp[30][30] = { 0, };
+    int tmp[MAX][MAX] = { 0, };
 
     for (int i = 0; i < len; i++) {
         for (int j = 0; j < len; j++) {
-            tmp[j][len - 1 - i] = A[x + i][y + j];
+            tmp[j][len - 1 - i] = map[x + i][y + j];
         }
     }
 
     for (int i = 0; i < len; i++) {
         for (int j = 0; j < len; j++) {
-            A[x + i][y + j] = tmp[i][j];
+            map[x + i][y + j] = tmp[i][j];
         }
     }
 
@@ -137,34 +113,31 @@ void rotate()
     rotate(len, 0);
     rotate(len, len);
 
-    int tmp[30] = { 0, };
+    int tmp[MAX] = { 0, };
     len -= 1;
 
-    for (int i = 0; i < len; i++)  tmp[i] = A[i][len];
-    for (int i = 0; i < len; i++)  A[i][len] = A[len][N - 1 - i];
-    for (int i = 0; i < len; i++)  A[len][N - 1 - i] = A[N - 1 - i][len];
-    for (int i = 0; i < len; i++)  A[N - 1 - i][len] = A[len][i];
-    for (int i = 0; i < len; i++)  A[len][i] = tmp[i];
+    for (int i = 0; i < len; i++)  tmp[i] = map[i][len];
+    for (int i = 0; i < len; i++)  map[i][len] = map[len][N - 1 - i];
+    for (int i = 0; i < len; i++)  map[len][N - 1 - i] = map[N - 1 - i][len];
+    for (int i = 0; i < len; i++)  map[N - 1 - i][len] = map[len][i];
+    for (int i = 0; i < len; i++)  map[len][i] = tmp[i];
+
 }
 
-int main(void) {
-    ios::sync_with_stdio(false);
-    cin.tie(NULL);
-
+int main(void)
+{
     cin >> N;
-    for (int i = 0; i < N; i++)
-        for (int j = 0; j < N; j++)
-            cin >> A[i][j];
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++)    cin >> map[i][j];
+    }
+    int score = 0;
 
-    init();
-    get_info();
+    score += calcScore();
 
     for (int i = 0; i < 3; i++) {
-        init();
         rotate();
-        get_info();
+        score += calcScore();
     }
-    cout << ans;
-
+    cout << score;
     return 0;
 }
