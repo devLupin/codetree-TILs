@@ -56,7 +56,7 @@ int adj() {
 
     queue<pii> q;
     int target = board[y][x];
-    int ret = 1;
+    int ret = 0;
 
     for (int i = 0; i < SZ; i++)
         memset(vis[i], false, sizeof(vis[i]));
@@ -67,6 +67,7 @@ int adj() {
     while (!q.empty()) {
         pii cur = q.front();
         q.pop();
+        ret++;
 
         for (int dir = 0; dir < 4; dir++) {
             int ny = cur.first + dy[dir];
@@ -77,7 +78,6 @@ int adj() {
 
             q.push({ ny,nx });
             vis[ny][nx] = true;
-            ret++;
         }
     }
 
