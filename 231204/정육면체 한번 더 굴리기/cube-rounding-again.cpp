@@ -101,7 +101,9 @@ int main() {
             cin >> board[i][j];
 
     while (m--) {
-        if (oom(dice_pos.first + dy[dir], dice_pos.second + dx[dir])) dir = (dir + 2) % 4;
+        if (oom(dice_pos.first + dy[dir], dice_pos.second + dx[dir])) {
+            dir = (dir < 2) ? dir+2: dir-2;
+        }
         dice_pos.first += dy[dir];
         dice_pos.second += dx[dir];
 
