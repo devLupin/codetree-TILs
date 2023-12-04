@@ -17,6 +17,11 @@ bool oom(int y, int x) {return y < 0 || x < 0 || y > n || x > n;}
 
 void move_dice() {
     int tmp;
+    
+    if(oom(dice_pos.first+dy[dir], dice_pos.second+dx[dir])) dir = (dir+2) % 4;
+
+    dice_pos.first += dy[dir];
+    dice_pos.second += dx[dir];
 
     if(dir == 0) {
         tmp = dice[5];
@@ -46,11 +51,6 @@ void move_dice() {
         dice[3] = dice[2];
         dice[2] = tmp;
     }
-
-    if(oom(dice_pos.first+dy[dir], dice_pos.second+dx[dir])) dir = (dir+2) % 4;
-
-    dice_pos.first += dy[dir];
-    dice_pos.second += dx[dir];
 }
 
 int adj() {
