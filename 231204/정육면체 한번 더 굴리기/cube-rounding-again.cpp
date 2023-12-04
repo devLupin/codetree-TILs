@@ -3,7 +3,7 @@
 using namespace std;
 using pii = pair<int,int>;
 
-const int SZ = 20, BOTTOM = 2;
+const int SZ = 25, BOTTOM = 2;
 const int dy[] = {0,-1,0,1};
 const int dx[] = {1,0,-1,0};
 int board[SZ][SZ];
@@ -17,7 +17,7 @@ bool oom(int y, int x) {return y < 0 || x < 0 || y > n || x > n;}
 
 void move_dice() {
     int tmp;
-    
+
     if(oom(dice_pos.first+dy[dir], dice_pos.second+dx[dir])) dir = (dir+2) % 4;
 
     dice_pos.first += dy[dir];
