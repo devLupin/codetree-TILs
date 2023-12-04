@@ -1,135 +1,103 @@
 #include <iostream>
-#include <vector>
-#include <algorithm>
 #include <queue>
 #include <cstring>
+#include <utility>
+#include <tuple>
 using namespace std;
+using pii = pair<int, int>;
 
-struct pos {
-	int y, x, d;
-};
-
+const int SZ = 25;
 const int dy[] = { 0,1,0,-1 };
 const int dx[] = { 1,0,-1,0 };
-const int btn_idx = 3;
-int N, M, K, ans;
+int board[SZ][SZ];
+bool vis[SZ][SZ];
+int dir = 0, ans;
+pii dice_pos = { 0,0 };
 
-int dice[6] = { 2,1,5,6,4,3 }, board[21][21];
-int dir = 0, sy = 0, sx = 0;
-bool vis[21][21];
+// 주사위가 놓여있는 상태 
+int u = 1, f = 2, r = 3;
 
-void print() {
-	for (int y = 0; y < N; y++) {
-		for (int x = 0; x < M; x++)
-			cout << board[y][x] << ' ';
-		cout << '\n';
-	}
+int n, m;
+
+bool oom(int y, int x) { return y < 0 || x < 0 || y > n || x > n; }
+
+void move_dice() {
+    int y = dice_pos.first;
+    int x = dice_pos.second;
+
+    if(dir == 0) // 오른쪽
+        tie(u, f, r) = make_tuple(7 - r, f, u);
+    else if(dir == 1) // 아래쪽
+        tie(u, f, r) = make_tuple(7 - f, u, r);
+    else if(dir == 2) // 왼쪽
+        tie(u, f, r) = make_tuple(r, f, 7 - u);
+    else if(dir == 3) // 위쪽
+        tie(u, f, r) = make_tuple(f, 7 - u, r);
+    
+    int bottom = 7 - u;
+
+    if(bottom > board[y][x])
+        dir = (dir + 1) % 4;
+    else if(bottom < board[y][x])
+        dir = (dir + 3) % 4;
 }
 
-bool oom(int y, int x) { return y < 0 || x < 0 || y >= N || x >= M; }
+int adj() {
+    int y = dice_pos.first;
+    int x = dice_pos.second;
 
-void update() {
-	int btn = dice[btn_idx];
+    queue<pii> q;
+    int target = board[y][x];
+    int ret = 0;
 
-	if (dir == 0) {
-		dice[btn_idx] = dice[5];
-		dice[5] = dice[1];
-		dice[1] = dice[4];
-		dice[4] = btn;
-	}
-	else if (dir == 1) {
-		dice[btn_idx] = dice[2];
-		dice[2] = dice[1];
-		dice[1] = dice[0];
-		dice[0] = btn;
-	}
-	else if (dir == 2) {
-		dice[btn_idx] = dice[4];
-		dice[4] = dice[1];
-		dice[1] = dice[5];
-		dice[5] = btn;
-	}
-	else {
-		dice[btn_idx] = dice[0];
-		dice[0] = dice[1];
-		dice[1] = dice[2];
-		dice[2] = btn;
-	}
+    for (int i = 0; i < SZ; i++)
+        memset(vis[i], false, sizeof(vis[i]));
+
+    q.push({ y,x });
+    vis[y][x] = true;
+
+    while (!q.empty()) {
+        pii cur = q.front();
+        q.pop();
+        ret += target;
+
+        for (int dir = 0; dir < 4; dir++) {
+            int ny = cur.first + dy[dir];
+            int nx = cur.second + dx[dir];
+
+            if (oom(ny, nx)) continue;
+            if (vis[ny][nx] || target != board[ny][nx]) continue;
+
+            q.push({ ny,nx });
+            vis[ny][nx] = true;
+        }
+    }
+
+    return ret;
 }
 
-int bfs(int y, int x) {
-	for (int i = 0; i < N; i++)
-		memset(vis[i], false, sizeof(vis[i]));
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(NULL);
 
-	int ret = 0;
-	int target = board[y][x];
-	queue<pos> q;
-	q.push({ y,x,0 });
-	vis[y][x] = true;
+    cin >> n >> m;
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            cin >> board[i][j];
 
-	while (!q.empty()) {
-		pos cur = q.front();
-		q.pop();
-		ret++;
+    while (m--) {
+        if (oom(dice_pos.first + dy[dir], dice_pos.second + dx[dir])) {
+            dir = (dir < 2) ? dir+2: dir-2;
+        }
+        dice_pos.first += dy[dir];
+        dice_pos.second += dx[dir];
 
-		for (int nd = 0; nd < 4; nd++) {
-			int ny = cur.y + dy[nd];
-			int nx = cur.x + dx[nd];
+        int num = adj();
+        ans += num;
 
-			if (!oom(ny, nx) && !vis[ny][nx] && board[ny][nx] == target) {
-				q.push({ ny,nx, cur.d + 1 });
-				vis[ny][nx] = true;
-			}
-		}
-	}
+        move_dice();
+    }
+    cout << ans;
 
-	return target * ret;
-}
-
-void move() {
-	// 방향 조정
-	int y = sy;
-	int x = sx;
-	if (oom(y + dy[dir], x + dx[dir])) dir = (dir + 2) % 4;
-	y += dy[dir];
-	x += dx[dir];
-
-	sy = y, sx = x;
-
-	//주사위 움직이기
-	update();
-
-	// 점수 획득
-	ans += bfs(y, x);
-
-	// A, B를 통한 방향 결정
-	int A = dice[btn_idx];
-	int B = board[y][x];
-
-	if (A > B) {
-		dir++;
-		if (dir > 3) dir = 0;
-	}
-	else if (A < B) {
-		dir--;
-		if (dir < 0) dir = 3;
-	}
-}
-
-int main(void) {
-	ios::sync_with_stdio(false);
-	cin.tie(NULL);
-
-	// freopen("input.txt", "r", stdin);
-
-	cin >> N >> M >> K;
-	for (int y = 0; y < N; y++)
-		for (int x = 0; x < M; x++)
-			cin >> board[y][x];
-
-	while (K--) move();
-
-	cout << ans;
-
-	return 0;
+    return 0;
 }
