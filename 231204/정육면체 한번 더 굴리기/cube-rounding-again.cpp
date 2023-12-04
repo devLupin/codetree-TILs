@@ -67,7 +67,7 @@ int adj() {
     while (!q.empty()) {
         pii cur = q.front();
         q.pop();
-        ret++;
+        ans += target;
 
         for (int dir = 0; dir < 4; dir++) {
             int ny = cur.first + dy[dir];
@@ -106,7 +106,6 @@ int main() {
         dice_pos.second += dx[dir];
 
         int num = adj();
-        ans += (board[dice_pos.first][dice_pos.second] * num);
 
         move_dice();
         set_dir();
