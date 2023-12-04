@@ -20,8 +20,6 @@ bool oom(int y, int x) { return y < 0 || x < 0 || y > n || x > n; }
 void move_dice() {
     int tmp;
 
-    if (oom(dice_pos.first + dy[dir], dice_pos.second + dx[dir])) dir = (dir + 2) % 4;
-
     if (dir == 0) {
         tmp = dice[5];
         dice[5] = dice[0];
@@ -50,9 +48,6 @@ void move_dice() {
         dice[1] = dice[2];
         dice[2] = tmp;
     }
-
-    dice_pos.first += dy[dir];
-    dice_pos.second += dx[dir];
 }
 
 int adj() {
@@ -106,9 +101,14 @@ int main() {
             cin >> board[i][j];
 
     while (m--) {
-        move_dice();
+        if (oom(dice_pos.first + dy[dir], dice_pos.second + dx[dir])) dir = (dir + 2) % 4;
+        dice_pos.first += dy[dir];
+        dice_pos.second += dx[dir];
+
         int num = adj();
         ans += (board[dice_pos.first][dice_pos.second] * num);
+
+        move_dice();
         set_dir();
     }
     cout << ans;
