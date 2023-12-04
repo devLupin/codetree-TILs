@@ -47,7 +47,8 @@ void move_dice() {
         dice[2] = tmp;
     }
 
-    if(oom(dice_pos.first+dy[dir], dice_pos.second+dx[dir])) return;
+    if(oom(dice_pos.first+dy[dir], dice_pos.second+dx[dir])) dir = (dir+2) % 4;
+
     dice_pos.first += dy[dir];
     dice_pos.second += dx[dir];
 }
