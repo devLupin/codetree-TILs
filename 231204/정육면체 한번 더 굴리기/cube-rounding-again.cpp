@@ -13,6 +13,8 @@ pii dice_pos = {0,0};
 
 int n, m;
 
+bool oom(int y, int x) {return y < 0 || x < 0 || y > n || x > n;}
+
 void move_dice() {
     int tmp;
 
@@ -44,8 +46,8 @@ void move_dice() {
         dice[3] = dice[2];
         dice[2] = tmp;
     }
-    
 
+    if(oom(dice_pos.first+dy[dir], dice_pos.second+dx[dir]))
     dice_pos.first += dy[dir];
     dice_pos.second += dx[dir];
 }
@@ -70,7 +72,7 @@ int adj() {
             int ny = cur.first + dy[dir];
             int nx = cur.second + dx[dir];
 
-            if(ny < 0 || nx < 0 || ny > n || nx > n) continue;
+            if(oom(ny,nx)) continue;
             if(vis[ny][nx] || target != board[ny][nx]) continue;
 
             q.push({ny,nx});
