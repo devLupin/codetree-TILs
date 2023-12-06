@@ -89,10 +89,11 @@ vector<string> move(int cnt, int dir, vector<string> prev) {
 void solve(int d, int cnt, vector<string> prev) {
     if (cnt > 10 && cnt > ans) return;
 
-    for (int dir = d; dir < 4; dir++) {
+    for (int dir = 0; dir < 4; dir++) {
+        if (d == dir) continue;
         auto nxt = move(cnt, dir, prev);
         if (nxt[0] == "") continue;
-        solve(d+1, cnt + 1, nxt);
+        solve(d, cnt + 1, nxt);
     }
 }
 
@@ -109,7 +110,7 @@ int main(void) {
         board.push_back(s);
     }
 
-    solve(0, 1, board);
+    solve(-1, 1, board);
     cout << ans;
 
     return 0;
