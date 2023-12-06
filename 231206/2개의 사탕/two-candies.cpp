@@ -1,117 +1,134 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
-#define Y first
-#define X second
 using namespace std;
 using pii = pair<int, int>;
 
+const int SZ = 10, MX = SZ + 1;
 const int dy[] = { -1,1,0,0 };
 const int dx[] = { 0,0,-1,1 };
+int n, m, ans = MX;
 vector<string> board;
-int n, m, ans = 11;
 
-char get_first(int dir, pii red, pii blue) {
-    int ry, rx, by, bx;
-    tie(ry, rx) = red;
-    tie(by, bx) = blue;
-
+char get_first(int dir, int ry, int rx, int by, int bx) {
     if (dir == 0) return ry < by ? 'R' : 'B';
     else if (dir == 1) return ry > by ? 'R' : 'B';
     else if (dir == 2) return rx < bx ? 'R' : 'B';
     else return rx > bx ? 'R' : 'B';
 }
 
-bool oom(int y, int x) { return y < 0 || x < 0 || y >= n || x >= n; }
+vector<string> move(int dir, vector<string> tmp, int cnt) {
+    int ry, rx, by, bx;
 
-vector<string> move_candy(int dir, pii pos, vector<string> prev) {
-    int y, x;
-    tie(y, x) = pos;
-    char c = prev[y][x];
-    prev[y][x] = '.';
-
-    while (true) {
-        y += dy[dir];
-        x += dx[dir];
-
-        if (prev[y][x] == 'O') break;
-        if (oom(y, x) || prev[y][x] != '.') {
-            y -= dy[dir];
-            x -= dx[dir];
-            break;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (tmp[i][j] == 'R') tie(ry, rx) = { i, j };
+            else if (tmp[i][j] == 'B') tie(by, bx) = { i,j };
         }
     }
 
-    if (prev[y][x] != 'O')
-        prev[y][x] = c;
-
-    return prev;
-}
-
-bool check(vector<string> tmp, char c) {
-    for (int i = 0; i < tmp.size(); i++)
-        for (int j = 0; j < tmp[i].size(); j++)
-            if (tmp[i][j] == c) return true;
-    return false;
-}
-
-vector<string> move(int cnt, int dir, vector<string> prev) {
-    pii red, blue;
-
-    for (int i = 0; i < prev.size(); i++)
-        for (int j = 0; j < prev[i].size(); j++) {
-            if (prev[i][j] == 'R') red = { i, j };
-            else if (prev[i][j] == 'B') blue = { i, j };
-        }
-
-    char first = get_first(dir, red, blue);
+    char first = get_first(dir, ry, rx, by, bx);
+    bool r_chk = false, b_chk = false;
 
     if (first == 'R') {
-        prev = move_candy(dir, red, prev);
-        prev = move_candy(dir, blue, prev);
+        while (ry >= 0 && rx >= 0 && ry < n && rx < m) {
+            int ny = ry + dy[dir];
+            int nx = rx + dx[dir];
+
+            if (tmp[ny][nx] == 'O') {
+                tmp[ry][rx] = '.';
+                r_chk = true;
+                break;
+            }
+            else if (tmp[ny][nx] != '.') break;
+
+            swap(tmp[ny][nx], tmp[ry][rx]);
+            tie(ry, rx) = { ny, nx };
+        }
+
+        while (by >= 0 && bx >= 0 && by < n && bx < m) {
+            int ny = by + dy[dir];
+            int nx = bx + dx[dir];
+
+            if (tmp[ny][nx] == 'O') {
+                tmp[by][bx] = '.';
+                b_chk = true;
+                break;
+            }
+            else if (tmp[ny][nx] != '.') break;
+
+            swap(tmp[ny][nx], tmp[by][bx]);
+            tie(by, bx) = { ny, nx };
+        }
     }
+
     else {
-        prev = move_candy(dir, blue, prev);
-        prev = move_candy(dir, red, prev);
+        while (by >= 0 && bx >= 0 && by < n && bx < m) {
+            int ny = by + dy[dir];
+            int nx = bx + dx[dir];
+
+            if (tmp[ny][nx] == 'O') {
+                tmp[by][bx] = '.';
+                b_chk = true;
+                break;
+            }
+            else if (tmp[ny][nx] != '.') break;
+
+            swap(tmp[ny][nx], tmp[by][bx]);
+            tie(by, bx) = { ny, nx };
+        }
+
+        while (ry >= 0 && rx >= 0 && ry < n && rx < m) {
+            int ny = ry + dy[dir];
+            int nx = rx + dx[dir];
+
+            if (tmp[ny][nx] == 'O') {
+                tmp[ry][rx] = '.';
+                r_chk = true;
+                break;
+            }
+            else if (tmp[ny][nx] != '.') break;
+
+            swap(tmp[ny][nx], tmp[ry][rx]);
+            tie(ry, rx) = { ny, nx };
+        }
     }
 
-    bool r_chk = check(prev, 'R');
-    bool b_chk = check(prev, 'B');
-
-    if (!r_chk && !b_chk) return { "" };
-    else if (r_chk && b_chk) return prev;
-    else if (!r_chk) {
+    if (r_chk && b_chk) return { "" };
+    else if (r_chk) {
         ans = min(ans, cnt);
         return { "" };
     }
-    return { "" };
+    else if (b_chk) return { "" };
+    return tmp;
 }
 
-void solve(int d, int cnt, vector<string> prev) {
-    if (cnt > 10 && cnt > ans) return;
+void solve(int cnt, vector<string> prev) {
+    if (cnt > SZ || cnt >= ans) return;
 
     for (int dir = 0; dir < 4; dir++) {
-        if (d == dir) continue;
-        auto nxt = move(cnt, dir, prev);
-        if (nxt[0] == "") continue;
-        solve(d, cnt + 1, nxt);
+        auto tmp = move(dir, prev, cnt);
+        if (tmp[0] == "") continue;
+
+        solve(cnt + 1, tmp);
     }
 }
 
-int main(void) {
+int main(void)
+{
     ios::sync_with_stdio(false);
     cin.tie(NULL);
 
     // freopen("input.txt", "r", stdin);
 
     cin >> n >> m;
-    for (int x = 0; x < n; x++) {
+    for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
         board.push_back(s);
     }
 
-    solve(-1, 1, board);
-    cout << ans;
+    solve(1, board);
 
+    cout << (ans == MX ? -1 : ans);
     return 0;
 }
