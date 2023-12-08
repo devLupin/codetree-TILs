@@ -50,7 +50,10 @@ void rolling(int dir) {
 
 int move(int dir) {
     if(board[x][y] == 0) board[x][y] = dice[BOTTOM];
-    else dice[BOTTOM] = board[x][y];
+    else {
+        dice[BOTTOM] = board[x][y];
+        board[x][y] = 0;
+    }
 
     if(oom(x+dx[dir], y+dy[dir])) return -1;
 
