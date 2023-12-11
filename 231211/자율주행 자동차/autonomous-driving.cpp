@@ -1,73 +1,53 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
-#define X first
-#define Y second
-
 using namespace std;
-using pii = pair<int, int>;
-using tiii = tuple<int, int, int>;
 
 const int dx[] = { -1,0,1,0 };
 const int dy[] = { 0,1,0,-1 };
+const int SZ = 50;
+int n, m, board[SZ][SZ], ans;
 
-int n, m, sx, sy, sd, A[55][55];
-bool vis[55][55];
+void dfs(int x, int y, int d) {
+	if (board[x][y] == 0) {
+		board[x][y] = 2;
+		ans++;
+	}
 
-int bfs() {
-    int ans = 1;
+	int ny, nx;
 
-    queue<tiii> q;
-    q.push({ sx, sy, sd });
-    vis[sx][sy] = true;
+	for (int i = 0; i < 4; i++) {
+		int nd = (d + 3 - i) % 4;
+		tie(nx, ny) = make_pair(x + dx[nd], y + dy[nd]);
 
-    while (!q.empty()) {
-        auto [x, y, d] = q.front();
-        q.pop();
+		if (board[nx][ny] == 0)
+			dfs(nx, ny, nd);
+	}
 
-        bool chk = false;
-        for (int dir = 0; dir < 4 && !chk; dir++) {
-            int nd = (d + 3 + dir) % 4;
-            int nx = x + dx[nd];
-            int ny = y + dy[nd];
+	int nd = (d + 2) % 4;
+	tie(nx, ny) = make_pair(x + dx[nd], y + dy[nd]);
 
-            if (!vis[nx][ny] && A[nx][ny] == 0) {
-                q.push({ nx,ny,nd });
-                vis[nx][ny] = true;
-                chk = true;
-                ans++;
-            }
-        }
+	if (board[nx][ny] == 1) {
+		cout << ans;
+		exit(0);
+	}
 
-        if (!chk) {
-            int nd = (d + 2) % 4;
-            int nx = x + dx[nd];
-            int ny = y + dy[nd];
-
-            if (A[nx][ny] != 1) {
-                q.push({ nx, ny, d });
-                if (!vis[nx][ny]) {
-                    vis[nx][ny] = true;
-                    ans++;
-                }
-            }
-        }
-    }
-
-    return ans;
+	dfs(nx, ny, d);
 }
 
-int main(void) {
-    ios::sync_with_stdio(false);
-    cin.tie(NULL);
+int main(void)
+{
+	ios::sync_with_stdio(false);
+	cin.tie(NULL);
 
-    // freopen("input.txt", "r", stdin);
+	// freopen("input.txt", "r", stdin);
 
-    cin >> n >> m >> sx >> sy >> sd;
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < m; j++)
-            cin >> A[i][j];
+	int x, y, d;
+	cin >> n >> m >> x >> y >> d;
 
-    cout << bfs();
+	for (int i = 0; i < n; i++)
+		for (int j = 0; j < m; j++)
+			cin >> board[i][j];
 
-    return 0;
+	dfs(x, y, d);
+	return 0;
 }
