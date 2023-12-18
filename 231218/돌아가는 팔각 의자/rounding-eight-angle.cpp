@@ -40,6 +40,7 @@ void solution(int n, int d) {
 			dir *= -1;
 			stat.push_back({ i, dir });
 		}
+		else break;
 	}
 
 	dir = d;
@@ -48,6 +49,7 @@ void solution(int n, int d) {
 			dir *= -1;
 			stat.push_back({ i, dir });
 		}
+		else break;
 	}
 
 	rotate(stat);
