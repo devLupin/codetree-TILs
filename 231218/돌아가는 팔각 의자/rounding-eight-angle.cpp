@@ -3,7 +3,6 @@
 using namespace std;
 using pii = pair<int, int>;
 
-const int sup[4] = { 1, 2, 4, 8 };
 const int left_adj = 6, right_adj = 2;
 deque<char> chair[4];
 int k;
@@ -34,6 +33,8 @@ void solution(int n, int d) {
 	vector<pii> stat;
 	int dir = d;
 
+	stat.push_back({ n, d });
+
 	for (int i = n - 1; i >= 0; i--) {
 		if (chair[i + 1][left_adj] != chair[i][right_adj]) {
 			dir *= -1;
@@ -50,7 +51,6 @@ void solution(int n, int d) {
 	}
 
 	rotate(stat);
-	rotate({ {n, d} });
 }
 
 int main(void) {
@@ -73,10 +73,10 @@ int main(void) {
 	}
 
 	int ans = 0;
+	int score[4] = { 1, 2, 4, 8 };
 	for (int i = 0; i < 4; i++)
-		if (chair[i][0] == '1')
-			ans += sup[i];
+		if (chair[i][0] == '1') ans += score[i];
+	
 	cout << ans;
-
 	return 0;
 }
