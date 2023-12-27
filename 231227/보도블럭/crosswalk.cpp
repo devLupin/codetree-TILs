@@ -24,7 +24,7 @@ int solve(int arr[][105]) {
 			
 			if (arr[i][j] == arr[i][j + 1]) prev++;
 
-			else if (arr[i][j] + 1 == arr[i][j + 1]) {
+			else if (arr[i][j] == arr[i][j + 1] + 1) {
 				if (check(arr, i, j)) {
 					j += L - 1;
 					prev = 0;
@@ -35,7 +35,7 @@ int solve(int arr[][105]) {
 				}
 			}
 
-			else if (arr[i][j] == arr[i][j + 1] + 1) {
+			else if (arr[i][j] + 1 == arr[i][j + 1]) {
 				if (prev >= L) prev = 1;
 				else {
 					flag = false;
