@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
+#define X first
+#define Y second
 using namespace std;
+using pii = pair<int, int>;
 
 int N, L, A[105][105], B[105][105];
 
@@ -11,11 +14,11 @@ bool check(int arr[][105], int x, int y) {
 }
 
 int solve(int arr[][105]) {
-	int prev = 1;
 	int ret = 0;
 
 	for (int i = 0; i < N; i++) {
 		bool flag = true;
+		int prev = 1;
 
 		for (int j = 0; j < N - 1; j++) {
 			
