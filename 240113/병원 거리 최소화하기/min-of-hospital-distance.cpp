@@ -23,6 +23,7 @@ int get_dist() {
 			}
 		}
 		ret += cmp;
+		if (ret > ans) return INF;
 	}
 
 	return ret;
