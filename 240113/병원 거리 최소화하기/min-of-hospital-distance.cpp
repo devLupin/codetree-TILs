@@ -29,16 +29,17 @@ int get_dist() {
 	return ret;
 }
 
-void dfs(int cnt) {
+void dfs(int s, int cnt) {
 	if (cnt == M) {
 		ans = min(ans, get_dist());
 		return;
 	}
 
-	for (pii nxt : hos) {
+	for (int i = s; i < hos.size(); i++) {
+		pii nxt = hos[i];
 		if (A[nxt.X][nxt.Y] == 2) {
 			A[nxt.X][nxt.Y] = 0;
-			dfs(cnt - 1);
+			dfs(i + 1, cnt - 1);
 			A[nxt.X][nxt.Y] = 2;
 		}
 	}
@@ -57,7 +58,7 @@ int main(void) {
 		}
 	}
 
-	dfs((int)hos.size());
+	dfs(0, hos.size());
 	cout << ans;
 
 	return 0;
