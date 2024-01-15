@@ -42,6 +42,17 @@ vector<pii> bfs(int x, int y) {
     return ret;
 }
 
+void update(vector<vector<pii>> pos) {
+    for (auto cur : pos) {
+        int sum = 0;
+
+        for (pii nxt : cur) sum += A[nxt.X][nxt.Y];
+        sum /= (int)cur.size();
+
+        for (pii nxt : cur) A[nxt.X][nxt.Y] = sum;
+    }
+}
+
 bool solve() {
     vector<vector<pii>> pos;
 
@@ -60,15 +71,7 @@ bool solve() {
 
     if (pos.empty()) return false;
 
-    for (auto cur : pos) {
-        int sum = 0;
-        
-        for (pii nxt : cur) sum += A[nxt.X][nxt.Y];
-        sum /= (int)cur.size();
-
-        for (pii nxt : cur) A[nxt.X][nxt.Y] = sum;
-    }
-
+    update(pos);
     return true;
 }
 
