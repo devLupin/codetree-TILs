@@ -79,7 +79,7 @@ int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
 
-	freopen("input.txt", "r", stdin);
+	// freopen("input.txt", "r", stdin);
 
 	cin >> n;
 	for (int i = 0; i < n; i++) {
