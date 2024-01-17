@@ -26,7 +26,7 @@ int distance(pii& src, pii& dest) {
 	vis[src.X][src.Y] = true;
 
 	while (!q.empty()) {
-		pos now = q.front();
+		pos& now = q.front();
 		q.pop();
 
 		if (now.x == dest.X && now.y == dest.Y) return now.d;
@@ -79,7 +79,7 @@ int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
 
-	// freopen("input.txt", "r", stdin);
+	freopen("input.txt", "r", stdin);
 
 	cin >> n;
 	for (int i = 0; i < n; i++) {
