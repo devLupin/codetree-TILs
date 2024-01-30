@@ -33,14 +33,14 @@ int bfs(vector<pii> v) {
 		while (q_sz--) {
 			info cur = q.front();
 			q.pop();
-			mx = max(mx, cur.d);
+			if(A[cur.x][cur.y] == 0) mx = max(mx, cur.d);
 
 			for (int dir = 0; dir < 4; dir++) {
 				int nx = cur.x + dx[dir];
 				int ny = cur.y + dy[dir];
 
 				if (nx < 0 || ny < 0 || nx >= n || ny >= n) continue;
-				if (A[nx][ny] == 0 && !vis[nx][ny]) {
+				if (A[nx][ny] != 1 && !vis[nx][ny]) {
 					q.push({ nx, ny, cur.d + 1 });
 					vis[nx][ny] = true;
 				}
