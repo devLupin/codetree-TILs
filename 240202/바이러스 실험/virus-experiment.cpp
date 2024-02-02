@@ -11,7 +11,7 @@ int dy[] = { -1,0,1,1,1,0,-1,-1 };
 struct info {
 	int x, y, age;
 };
-vector<info> virus;
+vector<info> virus, spread_virus, dead_virus, new_virus;
 
 bool oom(int x, int y) { return x < 1 || y < 1 || x > n || y > n; }
 
@@ -20,43 +20,50 @@ bool compare(info& a, info& b) { return a.age < b.age; }
 void eat() {
 	sort(virus.begin(), virus.end(), compare);
 
-	vector<info> v1, v2;
-
 	for (int i = 0; i < virus.size(); i++) {
 		info& nxt = virus[i];
-		if (nxt.x < 0 && nxt.y < 0) continue;
 
 		if (nxt.age <= A[nxt.x][nxt.y]) {
 			A[nxt.x][nxt.y] -= nxt.age;
 			virus[i].age++;
 
-			if(virus[i].age % 5 == 0)
-				v2.push_back(virus[i]);
-		}
-		else {
-			v1.push_back(nxt);
-			virus[i] = { -1,-1,-1 };
-		}
-	}
+			if (virus[i].age % 5 == 0)
+				spread_virus.push_back(virus[i]);
 
-	for (auto& nxt : v1)
+			new_virus.push_back(virus[i]);
+		}
+		else
+			dead_virus.push_back(nxt);
+	}
+}
+
+void update() {
+	for (auto& nxt : dead_virus)
 		A[nxt.x][nxt.y] += nxt.age / 2;
 
-	for (auto& nxt : v2) {
+	for (auto& nxt : spread_virus) {
 		for (int dir = 0; dir < 8; dir++) {
 			int nx = nxt.x + dx[dir];
 			int ny = nxt.y + dy[dir];
 
 			if (!oom(nx, ny))
-				virus.push_back({ nx,ny,1 });
+				new_virus.push_back({ nx,ny,1 });
 		}
 	}
+
+	virus = new_virus;
 }
 
 void add() {
 	for (int i = 1; i <= n; i++)
 		for (int j = 1; j <= n; j++)
 			A[i][j] += B[i][j];
+}
+
+void init() {
+	spread_virus.clear();
+	dead_virus.clear();
+	new_virus.clear();
 }
 
 int main(void) {
@@ -81,7 +88,9 @@ int main(void) {
 	}
 
 	while (k--) {
+		init();
 		eat();
+		update();
 		add();
 	}
 
