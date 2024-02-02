@@ -20,7 +20,7 @@ bool compare(info& a, info& b) { return a.age < b.age; }
 void eat() {
 	sort(virus.begin(), virus.end(), compare);
 
-	vector<info> v;
+	vector<info> v1, v2;
 
 	for (int i = 0; i < virus.size(); i++) {
 		info& nxt = virus[i];
@@ -29,31 +29,26 @@ void eat() {
 		if (nxt.age <= A[nxt.x][nxt.y]) {
 			A[nxt.x][nxt.y] -= nxt.age;
 			virus[i].age++;
+
+			if(virus[i].age % 5 == 0)
+				v2.push_back(virus[i]);
 		}
 		else {
-			v.push_back(nxt);
+			v1.push_back(nxt);
 			virus[i] = { -1,-1,-1 };
 		}
 	}
 
-	for (auto& nxt : v)
+	for (auto& nxt : v1)
 		A[nxt.x][nxt.y] += nxt.age / 2;
-}
 
-void spread() {
-	int sz = virus.size();
+	for (auto& nxt : v2) {
+		for (int dir = 0; dir < 8; dir++) {
+			int nx = nxt.x + dx[dir];
+			int ny = nxt.y + dy[dir];
 
-	for (int i = 0; i < sz; i++) {
-		auto nxt = virus[i];
-
-		if (nxt.age % 5 == 0) {
-			for (int dir = 0; dir < 8; dir++) {
-				int nx = nxt.x + dx[dir];
-				int ny = nxt.y + dy[dir];
-
-				if (!oom(nx, ny))
-					virus.push_back({ nx,ny,1 });
-			}
+			if (!oom(nx, ny))
+				virus.push_back({ nx,ny,1 });
 		}
 	}
 }
@@ -87,7 +82,6 @@ int main(void) {
 
 	while (k--) {
 		eat();
-		spread();
 		add();
 	}
 
