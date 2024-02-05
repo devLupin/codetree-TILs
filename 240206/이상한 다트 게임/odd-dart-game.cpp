@@ -72,12 +72,12 @@ void add() {
 		}
 	}
 
-	double cmp = (double)sum / cnt;
+	int cmp = sum / cnt;
 	for (int i = 1; i <= N; i++) {
 		for (int j = 0; j < M; j++) {
 			if (board[i][j] == 0) continue;
-			if ((double)board[i][j] > cmp) board[i][j]--;
-			else if ((double)board[i][j] < cmp) board[i][j]++;
+			if (board[i][j] > cmp) board[i][j]--;
+			else if (board[i][j] < cmp) board[i][j]++;
 		}
 	}
 }
