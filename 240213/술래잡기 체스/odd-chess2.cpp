@@ -124,7 +124,7 @@ int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
 
-	freopen("input.txt", "r", stdin);
+	// freopen("input.txt", "r", stdin);
 
 	chess.assign(17, {});
 	board.assign(4, {});
