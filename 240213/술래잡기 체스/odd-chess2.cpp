@@ -41,7 +41,7 @@ void move_chess() {
 		if (!oom(nx, ny)) {
 			if (board[nx][ny] == 0) {
 				flag = true;
-				cur = { nx, ny, d };
+				cur = { nx, ny, d, cur.alive };
 				swap(board[x][y], board[nx][ny]);
 			}
 			else if (board[nx][ny] != -1) {
@@ -63,6 +63,7 @@ void move_chess() {
 					if (board[nx][ny] == 0) {
 						cur = { nx, ny, nd };
 						swap(board[x][y], board[nx][ny]);
+						chess[i].d = nd;
 						break;
 					}
 					else if (board[nx][ny] != -1) {
@@ -86,8 +87,8 @@ void move_chess() {
 void solve(int x, int y, int dir, int sum) {
 	ans = max(ans, sum);
 
-	vector<vector<int>> cpy_board(board.begin(), board.end());
-	vector<info> cpy_chess(chess.begin(), chess.end());
+	vector<vector<int>> cpy_board = board;
+	vector<info> cpy_chess = chess;
 	move_chess();
 
 	for (int i = 1; i < 4; i++) {
