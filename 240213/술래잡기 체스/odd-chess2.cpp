@@ -41,8 +41,10 @@ void move_chess() {
 		if (!oom(nx, ny)) {
 			if (board[nx][ny] == 0) {
 				flag = true;
-				cur = { nx, ny, d, cur.alive };
-				swap(board[x][y], board[nx][ny]);
+				cur.x = nx;
+				cur.y = ny;
+				board[nx][ny] = i;
+				board[x][y] = 0;
 			}
 			else if (board[nx][ny] != -1) {
 				flag = true;
@@ -61,8 +63,10 @@ void move_chess() {
 			while (nd != d) {
 				if (!oom(nx, ny)) {
 					if (board[nx][ny] == 0) {
-						cur = { nx, ny, nd };
-						swap(board[x][y], board[nx][ny]);
+						cur.x = nx;
+						cur.y = ny;
+						board[nx][ny] = i;
+						board[x][y] = 0;
 						chess[i].d = nd;
 						break;
 					}
@@ -120,7 +124,7 @@ int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
 
-	// freopen("input.txt", "r", stdin);
+	freopen("input.txt", "r", stdin);
 
 	chess.assign(17, {});
 	board.assign(4, {});
