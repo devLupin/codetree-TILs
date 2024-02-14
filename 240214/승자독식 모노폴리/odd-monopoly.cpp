@@ -58,23 +58,6 @@ bool is_alive() {
 	return true;
 }
 
-int nxt_dir(int i, int target) {
-	info& cur = players[i];
-	int x = pos[i].X;
-	int y = pos[i].Y;
-
-	for (int dir = 1; dir <= 4; dir++) {
-		int nd = cur.dirs[d][dir];
-		int nx = x + dx[nd];
-		int ny = y + dy[nd];
-
-		if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue;
-		if (board[nx][ny].first == target) return nd;
-	}
-
-	return -1;
-}
-
 void reduce_turn() {
 	for (int i = 1; i <= N; i++) {
 		for (int j = 1; j <= N; j++) {
@@ -115,28 +98,40 @@ void kill_player() {
 	}
 }
 
+int nxt_dir(int i, int target) {
+	info& cur = players[i];
+	int x = pos[i].X;
+	int y = pos[i].Y;
+	int nd = cur.dir;
+
+	for (int dir = 1; dir <= 4; dir++) {
+		int ndir = cur.dirs[nd][dir];
+		int nx = x + dx[ndir];
+		int ny = y + dy[ndir];
+
+		if (oom(nx, ny)) continue;
+		if (board[nx][ny].first == target) return ndir;
+	}
+
+	return -1;
+}
+
 void move_player() {
 	for (int i = 1; i <= M; i++) {
 		if (!players[i].alive) continue;
 
 		info& cur = players[i];
-		int d = cur.dir;
-		int nx = pos[i].X + dx[d];
-		int ny = pos[i].Y + dy[d];
+		int nx, ny, nd;
 
-		if (!oom(nx, ny) && board[nx][ny].first == 0) {
-			nxt_board[nx][ny].push_back({ i, K });
-			continue;
-		}
+		nd = nxt_dir(i, 0);
+		if (nd == -1) nd = nxt_dir(i, i);
 
-		d = nxt_dir(i, 0);
-		if (d == -1) d = nxt_dir(i, i);
-
-		nx = pos[i].X + dx[d];
-		ny = pos[i].Y + dy[d];
+		nx = pos[i].X + dx[nd];
+		ny = pos[i].Y + dy[nd];
 
 		nxt_board[nx][ny].push_back({ i, K });
-		cur.dir = d;
+
+		cur.dir = nd;
 	}
 }
 
