@@ -58,47 +58,9 @@ bool is_alive() {
 	return true;
 }
 
-void reduce_turn() {
-	for (int i = 1; i <= N; i++) {
-		for (int j = 1; j <= N; j++) {
-			if (board[i][j].second > 0) {
-				board[i][j].second--;
-				if (board[i][j].second == 0)
-					board[i][j] = { 0,0 };
-			}
-		}
-	}
-}
-
-bool compare(const pii& a, const pii& b) {
-	return a.first < b.first;
-}
-
 bool oom(int x, int y) { return x < 1 || y < 1 || x > N || y > N; }
 
-void kill_player() {
-	for (int i = 1; i <= N; i++) {
-		for (int j = 1; j <= N; j++) {
-			auto& nxt = nxt_board[i][j];
-			if (nxt.size() == 1) {
-				board[i][j] = nxt[0];
-				pos[nxt[0].first] = { i, j };
-			}
-			else if (nxt.size() > 1) {
-				sort(nxt.begin(), nxt.end());
-				board[i][j] = nxt[0];
-				pos[nxt[0].first] = { i, j };
-
-				for (int idx = 1; idx < nxt.size(); idx++) {
-					int num = nxt[idx].first;
-					players[num].alive = false;
-				}
-			}
-		}
-	}
-}
-
-int nxt_dir(int i, int target) {
+int next_direction(int i, int target) {
 	info& cur = players[i];
 	int x = pos[i].X;
 	int y = pos[i].Y;
@@ -123,8 +85,8 @@ void move_player() {
 		info& cur = players[i];
 		int nx, ny, nd;
 
-		nd = nxt_dir(i, 0);
-		if (nd == -1) nd = nxt_dir(i, i);
+		nd = next_direction(i, 0);
+		if (nd == -1) nd = next_direction(i, i);
 
 		nx = pos[i].X + dx[nd];
 		ny = pos[i].Y + dy[nd];
@@ -135,14 +97,38 @@ void move_player() {
 	}
 }
 
-void print() {
+void reduce_turn() {
 	for (int i = 1; i <= N; i++) {
 		for (int j = 1; j <= N; j++) {
-			cout << board[i][j].first << '(' << board[i][j].second << ')' << ' ';
+			if (board[i][j].second > 0) {
+				board[i][j].second--;
+				if (board[i][j].second == 0)
+					board[i][j] = { 0,0 };
+			}
 		}
-		cout << '\n';
 	}
-	cout << '\n';
+}
+
+void kill_player() {
+	for (int i = 1; i <= N; i++) {
+		for (int j = 1; j <= N; j++) {
+			auto& nxt = nxt_board[i][j];
+			if (nxt.size() == 1) {
+				board[i][j] = nxt[0];
+				pos[nxt[0].first] = { i, j };
+			}
+			else if (nxt.size() > 1) {
+				sort(nxt.begin(), nxt.end());
+				board[i][j] = nxt[0];
+				pos[nxt[0].first] = { i, j };
+
+				for (int idx = 1; idx < nxt.size(); idx++) {
+					int num = nxt[idx].first;
+					players[num].alive = false;
+				}
+			}
+		}
+	}
 }
 
 void init() {
