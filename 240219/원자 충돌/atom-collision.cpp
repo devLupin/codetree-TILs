@@ -11,24 +11,15 @@ vector<info> v, cpy;
 void move() {
 	for (int i = 0; i < v.size(); i++) {
 		auto& nxt = v[i];
-		int x = nxt.x;
-		int y = nxt.y;
-		int s = nxt.s;
-		int d = nxt.d;
+		int x, y, s, d;
+		tie(x, y, s, d) = { nxt.x, nxt.y, nxt.s, nxt.d };
 
-		while (s--) {
-			x += dx[d];
-			y += dy[d];
+		int nx = (x + dx[d] * s + N * s) % N;
+		int ny = (y + dy[d] * s + N * s) % N;
 
-			if (x < 0) x = N - 1;
-			if (y < 0) y = N - 1;
-			if (x >= N) x = 0;
-			if (y >= N) y = 0;
-		}
-
-		nxt.x = x;
-		nxt.y = y;
-		board[x][y].push_back(i);
+		nxt.x = nx;
+		nxt.y = ny;
+		board[nx][ny].push_back(i);
 	}
 }
 
