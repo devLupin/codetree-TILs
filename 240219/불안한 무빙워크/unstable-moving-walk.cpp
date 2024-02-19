@@ -1,42 +1,39 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
 using namespace std;
-using pii = pair<int, int>;
 
 int N, K;
-deque<pii> walk;
+deque<int> safety, person;
 
-void rotate() {
-	walk.push_front(walk.back());
-	walk.pop_back();
-}
-
-void move() {
-	int nxt = 0;
-	for (int i = 0; i < N - 1; i++) {
-		if (walk[i].second == 0) continue;
-
-		if (walk[i + 1].first != 0 && walk[i + 1].second == 0) {
-			(walk[i + 1].first)--;
-			swap(walk[i], walk[i + 1]);
-		}
-		nxt = max(walk[i].second, nxt);
-	}
-
-	if (walk[N - 1].second != 0) walk[N - 1].second = 0;
-
-	if (walk[0].second == 0) {
-		walk[0].second = nxt + 1;
-		(walk[0].first)--;
-	}
-}
-
-bool check() {
+int solve() {
 	int cnt = 0;
-	for (int i = 0; i < N * 2; i++)
-		if (walk[i].first == 0) cnt++;
 
-	return cnt == K;
+	safety.push_front(safety.back());
+	safety.pop_back();
+	person.push_front(person.back());
+	person.pop_back();
+
+	if (person[N - 1] > 0) person[N - 1] = 0;
+
+	for (int i = 0; i < N - 1; i++) {
+		if (person[i] && safety[i + 1] && !person[i + 1]) {
+			swap(person[i], person[i + 1]);
+			safety[i + 1]--;
+
+			if (!safety[i + 1]) cnt++;
+		}
+	}
+
+	if (person[N - 1] > 0) person[N - 1] = 0;
+
+	if (safety[0] > 0) {
+		person[0] = 1;
+		safety[0]--;
+
+		if (!safety[0]) cnt++;
+	}
+
+	return cnt;
 }
 
 int main(void) {
@@ -45,18 +42,19 @@ int main(void) {
 
 	// freopen("input.txt", "r", stdin);
 	
+	
 	cin >> N >> K;
-	walk.assign(N * 2, { 0,0 });
+	safety.assign(N * 2, 0);
+	person.assign(N * 2, 0);
 	for (int i = 0; i < N * 2; i++)
-		cin >> walk[i].first;
+		cin >> safety[i];
 
 	int ans = 0;
-	while (!check()) {
-		rotate();
-		move();
-		ans++;
-	}
-
+    while (true) {
+	    int chk = solve();
+	    ans++;
+	    if (chk == K) break;
+    }
 	cout << ans;
 
 	return 0;
