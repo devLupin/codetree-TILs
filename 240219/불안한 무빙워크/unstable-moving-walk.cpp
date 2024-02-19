@@ -1,55 +1,62 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
 using namespace std;
 
-int N, K, cnt;
-deque<int> safety, person;
+int n, k, ans;
+deque<int> dq;
+deque<bool> chk;
+
+int count() {
+	int ret = 0;
+	for(int i=0; i<dq.size(); i++)
+		ret += (dq[i] == 0);
+	return ret;
+}
+
+void rotate() {
+	dq.push_front(dq.back());
+	dq.pop_back();
+	chk.push_front(chk.back());
+	chk.pop_back();
+}
 
 void solve() {
-	safety.push_front(safety.back());
-	safety.pop_back();
-	person.push_front(person.back());
-	person.pop_back();
+	while(count() < k) {
+		ans++;
 
-	if (person[N - 1] > 0) person[N - 1] = 0;
+		rotate();
 
-	for (int i = 0; i < N - 1; i++) {
-		if (person[i] && safety[i + 1] && !person[i + 1]) {
-			swap(person[i], person[i + 1]);
-			safety[i + 1]--;
+		if(chk[n-1]) chk[n-1] = false;
+		
+		for(int i=n-2; i>=0; i--) {
+			if(dq[i+1] > 0 && !chk[i+1] && chk[i]) {
+				dq[i+1]--;
+				chk[i] = false;
 
-			if (!safety[i + 1]) cnt++;
+				if(i == n-2) continue;
+				chk[i+1] = true;
+			}
 		}
-	}
 
-	if (person[N - 1] > 0) person[N - 1] = 0;
-
-	if (safety[0] > 0) {
-		person[0] = 1;
-		safety[0]--;
-
-		if (!safety[0]) cnt++;
+		if(dq[0] > 0 && !chk[0]) {
+			dq[0]--;
+			chk[0] = true;
+		}
 	}
 }
 
-int main(void) {
+int main(void)
+{
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
 
-	// freopen("input.txt", "r", stdin);
-	
-	cin >> N >> K;
-	safety.assign(N * 2, 0);
-	person.assign(N * 2, 0);
-	for (int i = 0; i < N * 2; i++)
-		cin >> safety[i];
-
-	int ans = 0;
-	while (true) {
-		solve();
-		ans++;
-		if (cnt == K) break;
+	cin >> n >> k;
+	for(int x, i=0; i<n*2; i++) {
+		cin >> x;
+		dq.push_back(x);
+		chk.push_back(false);
 	}
+
+	solve();
 	cout << ans;
 
 	return 0;
