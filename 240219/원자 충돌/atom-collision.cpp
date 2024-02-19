@@ -8,13 +8,6 @@ vector<int> board[50][50];
 struct info { int x, y, m, s, d; };
 vector<info> v, cpy;
 
-void init() {
-	for (int i = 0; i < N; i++)
-		for (int j = 0; j < N; j++)
-			board[i][j].clear();
-	cpy.clear();
-}
-
 void move() {
 	for (int i = 0; i < v.size(); i++) {
 		auto& nxt = v[i];
@@ -47,9 +40,17 @@ void split(int x, int y, vector<int> dirs, int m, int s) {
 }
 
 void synthesize() {
+	cpy.clear();
+
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < N; j++) {
-			if (board[i][j].size() > 1) {
+			int sz = board[i][j].size();
+
+			if (sz == 0) continue;
+			
+			else if(sz == 1) cpy.push_back(v[board[i][j][0]]);
+
+			else {
 				bool chk1 = false, chk2 = false;
 				int sumM = 0, sumS = 0;
 
@@ -67,8 +68,8 @@ void synthesize() {
 				if (chk1 && chk2) split(i, j, { 1, 3, 5, 7 }, m, s);
 				else split(i, j, { 0, 2, 4, 6 }, m, s);
 			}
-			else if (!board[i][j].empty())
-				cpy.push_back(v[board[i][j][0]]);
+
+			board[i][j].clear();
 		}
 	}
 
@@ -78,7 +79,7 @@ void synthesize() {
 int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
-	
+
 	cin >> N >> M >> K;
 	for (int x, y, m, s, d, i = 0; i < M; i++) {
 		cin >> x >> y >> m >> s >> d;
@@ -87,7 +88,6 @@ int main(void) {
 	}
 
 	while (K--) {
-		init();
 		move();
 		synthesize();
 	}
