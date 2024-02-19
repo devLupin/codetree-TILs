@@ -2,12 +2,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int N, K;
+int N, K, cnt;
 deque<int> safety, person;
 
-int solve() {
-	int cnt = 0;
-
+void solve() {
 	safety.push_front(safety.back());
 	safety.pop_back();
 	person.push_front(person.back());
@@ -32,8 +30,6 @@ int solve() {
 
 		if (!safety[0]) cnt++;
 	}
-
-	return cnt;
 }
 
 int main(void) {
@@ -42,7 +38,6 @@ int main(void) {
 
 	// freopen("input.txt", "r", stdin);
 	
-	
 	cin >> N >> K;
 	safety.assign(N * 2, 0);
 	person.assign(N * 2, 0);
@@ -50,11 +45,11 @@ int main(void) {
 		cin >> safety[i];
 
 	int ans = 0;
-    while (true) {
-	    int chk = solve();
-	    ans++;
-	    if (chk == K) break;
-    }
+	while (true) {
+		solve();
+		ans++;
+		if (cnt == K) break;
+	}
 	cout << ans;
 
 	return 0;
