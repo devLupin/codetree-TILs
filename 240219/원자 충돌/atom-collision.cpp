@@ -28,9 +28,9 @@ void move() {
 			y += dy[d];
 
 			if (x < 0) x = N - 1;
-			else if (y < 0) y = N - 1;
-			else if (x >= N) x = 0;
-			else if (y >= N) y = 0;
+			if (y < 0) y = N - 1;
+			if (x >= N) x = 0;
+			if (y >= N) y = 0;
 		}
 
 		nxt.x = x;
