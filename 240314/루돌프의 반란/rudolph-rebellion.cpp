@@ -28,65 +28,53 @@ int distance(int x, int y) { return (rudolf.X - x) * (rudolf.X - x) + (rudolf.Y 
 
 bool oom(int x, int y) { return x < 1 || y < 1 || x > N || y > N; }
 
-pii direction(int x, int y) {
-	int ddx, ddy;
-
-	if (rudolf.X < x) ddx = 1;
-	else if (rudolf.X > x) ddx = -1;
-	else ddx = 0;
-
-	if (rudolf.Y < y) ddy = 1;
-	else if (rudolf.Y > y) ddy = -1;
-	else ddy = 0;
-
-	return { ddx, ddy };
+int get_dir(int p) {
+	if (p == 0) return 0;
+	return (p > 0 ? 1 : -1);
 }
 
-void interaction(vector<pii> v, int ddx, int ddy) {
+void interaction(int x, int y, int ddx, int ddy) {
+	vector<pair<pii, int>> v;
+
+	while (!oom(x, y) && board[x][y] != 0) {
+		v.push_back({ {x, y}, board[x][y] });
+		board[x][y] = 0;
+		x += ddx;
+		y += ddy;
+	}
+
 	reverse(v.begin(), v.end());
 
-	for (pii nxt : v) {
-		int num = nxt.first;
-		int cnt = nxt.second;
+	for (auto nxt : v) {
+		auto [cur, num] = nxt;
 
-		auto [x, y] = santa[num];
-		int nx = santa[num].X + ddx * cnt;
-		int ny = santa[num].Y + ddy * cnt;
+		int x = cur.X + ddx;
+		int y = cur.Y + ddy;
 
-		if (oom(nx, ny)) {
-			board[x][y] = 0;
-			rm[num] = true;
+		if (oom(x, y)) rm[num] = true;
+		else {
+			santa[num] = { x, y };
+			board[x][y] = num;
 		}
-		else
-			swap(board[x][y], board[nx][ny]);
-
-		santa[num] = { nx, ny };
 	}
 }
 
 void crash(int num, int cnt, int ddx, int ddy) {
 	auto [x, y] = santa[num];
-	auto [nx, ny] = santa[num];
-	vector<pii> v;
+	board[x][y] = 0;
 
-	while (cnt--) {
-		nx += ddx;
-		ny += ddy;
+	x += cnt * ddx;
+	y += cnt * ddy;
 
-		if (board[nx][ny] > 0) v.push_back({ board[nx][ny], cnt + 1 });
-	}
-
-	if (v.size() > 0)
-		interaction(v, ddx, ddy);
-	
-	if (oom(nx, ny)) {
-		board[x][y] = 0;
+	if (oom(x, y)) {
 		rm[num] = true;
+		return;
 	}
-	else 
-		swap(board[x][y], board[nx][ny]);
-
-	santa[num] = { nx, ny };
+	else if (board[x][y] > 0)
+		interaction(x, y, ddx, ddy);
+	
+	board[x][y] = num;
+	santa[num] = { x, y };
 }
 
 void move_rudolf() {
@@ -104,8 +92,9 @@ void move_rudolf() {
 	int near = tmp[0].num;
 
 	if (near > 0) {
-		auto [ddx, ddy] = direction(santa[near].X, santa[near].Y);
-		
+		int ddx = get_dir(santa[near].X - rudolf.X);
+		int ddy = get_dir(santa[near].Y - rudolf.Y);
+
 		int nx = rudolf.X + ddx;
 		int ny = rudolf.Y + ddy;
 		int num = board[nx][ny];
@@ -142,13 +131,13 @@ void move_santa() {
 		}
 
 		if (near >= 0) {
-
-			auto [ddx, ddy] = make_pair(dx[near], dy[near]);
-			int nx = nxt.X + ddx;
-			int ny = nxt.Y + ddy;
+			int nx = nxt.X + dx[near];
+			int ny = nxt.Y + dy[near];
 
 			if (board[nx][ny] == -1) {
-				crash(i, D - 1, ddx * -1, ddy * -1);
+				int dir = (near + 2) % 4;
+
+				crash(i, D - 1, dx[dir], dy[dir]);
 				score[i] += D;
 				stun[i] = 2;
 			}
