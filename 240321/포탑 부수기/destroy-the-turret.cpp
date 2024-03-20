@@ -162,6 +162,8 @@ int main(void) {
 		fill(&attacked[0][0], &attacked[N][M], false);
 		new_turlet();
 
+		if (v.size() < 2) break;
+
 		sort(v.begin(), v.end(), Compare);
 		auto weak = v.front();
 		auto strong = v.back();
