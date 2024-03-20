@@ -123,7 +123,7 @@ void bomb_attack(info& weak, info& strong, int dis) {
 
 void maintain(int t) {
 	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
+		for (int j = 0; j < M; j++) {
 			if (board[i][j] <= 0 || attacked[i][j]) continue;
 			
 			turlet[i][j].p += 1;
@@ -136,7 +136,7 @@ void new_turlet() {
 	v.clear();
 
 	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
+		for (int j = 0; j < M; j++) {
 			auto cur = turlet[i][j];
 			if (cur.p > 0) v.push_back({ i, j, cur.t, cur.p });
 		}
@@ -151,7 +151,7 @@ int main(void) {
 
 	cin >> N >> M >> K;
 	for (int i = 0; i < N; i++) {
-		for (int p, j = 0; j < N; j++) {
+		for (int p, j = 0; j < M; j++) {
 			cin >> p;
 			board[i][j] = p;
 			if (p > 0) turlet[i][j] = { 0, p };
@@ -159,7 +159,7 @@ int main(void) {
 	}
 
 	for (int t = 1; t <= K; t++) {
-		fill(&attacked[0][0], &attacked[N][N], false);
+		fill(&attacked[0][0], &attacked[N][M], false);
 		new_turlet();
 
 		sort(v.begin(), v.end(), Compare);
