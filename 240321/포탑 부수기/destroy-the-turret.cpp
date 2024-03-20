@@ -26,16 +26,6 @@ bool Compare(const info& a, const info& b) {
 	}
 	return a.p < b.p;
 }
-bool Compare2(const info& a, const info& b) {
-	if (a.p == b.p) {
-		if (a.t == b.t) {
-			if (a.x + a.y == b.x + b.y) return a.y < b.y;
-			return a.x + a.y < b.x + b.y;
-		}
-		return a.t < b.t;
-	}
-	return a.p > b.p;
-}
 
 void Select(info weak, int t) {
 	int x = weak.x;
@@ -174,9 +164,7 @@ int main(void) {
 
 		sort(v.begin(), v.end(), Compare);
 		auto weak = v.front();
-
-		sort(v.begin(), v.end(), Compare2);
-		auto strong = v.front();
+		auto strong = v.back();
 
 		Select(weak, t);
 		int dis = board[weak.x][weak.y];
