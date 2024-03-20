@@ -11,6 +11,7 @@ vector<info> v;
 int N, M, K, board[15][15];
 pii vis[15][15];
 tur turlet[15][15];
+bool attacked[15][15];
 
 const int dx[] = { 0,1,0,-1,-1,-1,1,1 };
 const int dy[] = { 1,0,-1,0,-1,1,1,-1 };
@@ -21,15 +22,19 @@ bool Compare(const info& a, const info& b) {
 			if (a.x + a.y == b.x + b.y) return a.y > b.y;
 			return a.x + a.y > b.x + b.y;
 		}
-		return a.t < b.t;
+		return a.t > b.t;
 	}
 	return a.p < b.p;
 }
 
 void Select(info weak, int t) {
-	turlet[weak.x][weak.y].p += N + M;
-	turlet[weak.x][weak.y].t = t;
-	board[weak.x][weak.y] += N + M;
+	int x = weak.x;
+	int y = weak.y;
+
+	turlet[x][y].p += N + M;
+	turlet[x][y].t = t;
+	board[x][y] += N + M;
+	attacked[x][y] = true;
 }
 
 bool lazer(pii src, pii dst) {
@@ -66,32 +71,38 @@ bool lazer(pii src, pii dst) {
 	return false;
 }
 
-void lazer_attack(info& weak, info& strong, int t, int dis) {
-	turlet[strong.x][strong.y].p -= dis; 
-	turlet[strong.x][strong.y].t = t;
-	board[strong.x][strong.y] -= dis;
+void lazer_attack(info& weak, info& strong, int dis) {
+	int x = strong.x;
+	int y = strong.y;
 
-	auto [x, y] = vis[strong.x][strong.y];
+	turlet[x][y].p -= dis;
+	board[x][y] -= dis;
+	attacked[x][y] = true;
+
+	tie(x, y) = vis[x][y];
 	dis /= 2;
 	while (true) {
 		if (x == weak.x && y == weak.y) break;
 
 		turlet[x][y].p -= dis;
-		turlet[x][y].t = t;
 		board[x][y] -= dis;
+		attacked[x][y] = true;
 
 		tie(x, y) = vis[x][y];
 	}
 }
 
-void bomb_attack(info& weak, info& strong, int t, int dis) {
-	turlet[strong.x][strong.y].p -= dis;
-	turlet[strong.x][strong.y].t = t;
-	board[strong.x][strong.y] -= dis;
+void bomb_attack(info& weak, info& strong, int dis) {
+	int x = strong.x;
+	int y = strong.y;
+	
+	turlet[x][y].p -= dis;
+	board[x][y] -= dis;
+	attacked[x][y] = true;
 
-
-	auto [x, y] = make_pair(strong.x, strong.y);
+	tie(x, y) = make_pair(strong.x, strong.y);
 	dis /= 2;
+
 	for (int dir = 0; dir < 8; dir++) {
 		int nx = x + dx[dir];
 		int ny = y + dy[dir];
@@ -105,15 +116,15 @@ void bomb_attack(info& weak, info& strong, int t, int dis) {
 		if (board[nx][ny] <= 0) continue;
 
 		turlet[nx][ny].p -= dis;
-		turlet[nx][ny].t = t;
 		board[nx][ny] -= dis;
+		attacked[nx][ny] = true;
 	}
 }
 
 void maintain(int t) {
 	for (int i = 0; i < N; i++) {
-		for (int p, j = 0; j < N; j++) {
-			if (board[i][j] <= 0 || turlet[i][j].t == t) continue;
+		for (int j = 0; j < N; j++) {
+			if (board[i][j] <= 0 || attacked[i][j]) continue;
 			
 			turlet[i][j].p += 1;
 			board[i][j] += 1;
@@ -125,7 +136,7 @@ void new_turlet() {
 	v.clear();
 
 	for (int i = 0; i < N; i++) {
-		for (int p, j = 0; j < N; j++) {
+		for (int j = 0; j < N; j++) {
 			auto cur = turlet[i][j];
 			if (cur.p > 0) v.push_back({ i, j, cur.t, cur.p });
 		}
@@ -148,6 +159,7 @@ int main(void) {
 	}
 
 	for (int t = 1; t <= K; t++) {
+		fill(&attacked[0][0], &attacked[N][N], false);
 		new_turlet();
 
 		if (v.size() < 2) break;
@@ -160,8 +172,8 @@ int main(void) {
 		int dis = board[weak.x][weak.y];
 
 		if (lazer(make_pair(weak.x, weak.y), make_pair(strong.x, strong.y)))
-			lazer_attack(weak, strong, t, dis);
-		else bomb_attack(weak, strong, t, dis);
+			lazer_attack(weak, strong, dis);
+		else bomb_attack(weak, strong, dis);
 
 		maintain(t);
 	}
