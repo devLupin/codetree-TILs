@@ -8,11 +8,11 @@ using pii = pair<int, int>;
 struct info { int x, y, t, p; };
 struct tur { int t, p; };
 vector<info> v;
-int N, M, K, board[15][15];
-pii vis[15][15];
+int N, M, K, board[15][15], vis[15][15];
 tur turlet[15][15];
 bool attacked[15][15];
 
+// 우, 하, 좌, 상
 const int dx[] = { 0,1,0,-1,-1,-1,1,1 };
 const int dy[] = { 1,0,-1,0,-1,1,1,-1 };
 
@@ -38,11 +38,11 @@ void Select(info weak, int t) {
 }
 
 bool lazer(pii src, pii dst) {
-	fill(&vis[0][0], &vis[N][N], make_pair(0, 0));
+	fill(&vis[0][0], &vis[N][N], 4);
 	queue<pii> q;
 
 	q.push({ src.X, src.Y });
-	vis[src.X][src.Y] = { -1,-1 };
+	vis[src.X][src.Y] = -1;
 
 	while (!q.empty()) {
 		pii cur = q.front();
@@ -59,11 +59,9 @@ bool lazer(pii src, pii dst) {
 			if (ny < 0) ny = M - 1;
 			else if (ny >= M) ny = 0;
 
-			if (board[nx][ny] == 0) continue;
-
-			if (vis[nx][ny].first == 0 && vis[nx][ny].second == 0) {
+			if (board[nx][ny] > 0 && vis[nx][ny] == 4) {
+				vis[nx][ny] = (dir + 2) % 4;
 				q.push({ nx, ny });
-				vis[nx][ny] = { cur.X, cur.Y };
 			}
 		}
 	}
@@ -79,16 +77,24 @@ void lazer_attack(info& weak, info& strong, int dis) {
 	board[x][y] -= dis;
 	attacked[x][y] = true;
 
-	tie(x, y) = vis[x][y];
+	int dir = vis[x][y];
+	int nx = x + dx[dir];
+	int ny = y + dy[dir];
+
 	dis /= 2;
-	while (true) {
-		if (x == weak.x && y == weak.y) break;
+	while (vis[nx][ny] != -1) {
+		turlet[nx][ny].p -= dis;
+		board[nx][ny] -= dis;
+		attacked[nx][ny] = true;
 
-		turlet[x][y].p -= dis;
-		board[x][y] -= dis;
-		attacked[x][y] = true;
+		dir = vis[nx][ny];
+		nx += dx[dir];
+		ny += dy[dir];
 
-		tie(x, y) = vis[x][y];
+		if (nx < 0) nx = N - 1;
+		else if (nx >= N) nx = 0;
+		if (ny < 0) ny = M - 1;
+		else if (ny >= M) ny = 0;
 	}
 }
 
@@ -143,6 +149,15 @@ void new_turlet() {
 	}
 }
 
+void print() {
+	cout << '\n';
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < M; j++)
+			cout << vis[i][j] << ' ';
+		cout << '\n';
+	}
+}
+
 int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
@@ -171,8 +186,9 @@ int main(void) {
 		Select(weak, t);
 		int dis = board[weak.x][weak.y];
 
-		if (lazer(make_pair(weak.x, weak.y), make_pair(strong.x, strong.y)))
+		if (lazer(make_pair(weak.x, weak.y), make_pair(strong.x, strong.y))) {
 			lazer_attack(weak, strong, dis);
+		}
 		else bomb_attack(weak, strong, dis);
 
 		maintain(t);
