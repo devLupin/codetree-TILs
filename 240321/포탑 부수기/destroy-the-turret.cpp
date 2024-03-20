@@ -8,23 +8,20 @@ using pii = pair<int, int>;
 struct info { int x, y, t, p; };
 struct tur { int t, p; };
 vector<info> v;
-int N, M, K, board[15][15], vis[15][15];
+int N, M, K, board[15][15];
 tur turlet[15][15];
-bool attacked[15][15];
+bool vis[15][15], attacked[15][15];
+int back_x[15][15], back_y[15][15];
 
 // 우, 하, 좌, 상
 const int dx[] = { 0,1,0,-1,-1,-1,1,1 };
 const int dy[] = { 1,0,-1,0,-1,1,1,-1 };
 
 bool Compare(const info& a, const info& b) {
-	if (a.p == b.p) {
-		if (a.t == b.t) {
-			if (a.x + a.y == b.x + b.y) return a.y > b.y;
-			return a.x + a.y > b.x + b.y;
-		}
-		return a.t > b.t;
-	}
-	return a.p < b.p;
+	if (a.p != b.p) return a.p < b.p;
+	if (a.t != b.t) return a.t > b.t;
+	if (a.x + a.y != b.x + b.y) return a.x + a.y > b.x + b.y;
+	return a.y > b.y;
 }
 
 void Select(info weak, int t) {
@@ -38,11 +35,11 @@ void Select(info weak, int t) {
 }
 
 bool lazer(pii src, pii dst) {
-	fill(&vis[0][0], &vis[N][N], 4);
+	fill(&vis[0][0], &vis[N][N], false);
 	queue<pii> q;
 
 	q.push({ src.X, src.Y });
-	vis[src.X][src.Y] = -1;
+	vis[src.X][src.Y] = true;
 
 	while (!q.empty()) {
 		pii cur = q.front();
@@ -51,16 +48,13 @@ bool lazer(pii src, pii dst) {
 		if (cur.X == dst.X && cur.Y == dst.Y) return true;
 
 		for (int dir = 0; dir < 4; dir++) {
-			int nx = cur.X + dx[dir];
-			int ny = cur.Y + dy[dir];
+			int nx = (cur.X + dx[dir] + N) % N;
+			int ny = (cur.Y + dy[dir] + M) % M;
 
-			if (nx < 0) nx = N - 1;
-			else if (nx >= N) nx = 0;
-			if (ny < 0) ny = M - 1;
-			else if (ny >= M) ny = 0;
-
-			if (board[nx][ny] > 0 && vis[nx][ny] == 4) {
-				vis[nx][ny] = (dir + 2) % 4;
+			if (board[nx][ny] > 0 && !vis[nx][ny]) {
+				vis[nx][ny] = true;
+				back_x[nx][ny] = cur.X;
+				back_y[nx][ny] = cur.Y;
 				q.push({ nx, ny });
 			}
 		}
@@ -77,24 +71,26 @@ void lazer_attack(info& weak, info& strong, int dis) {
 	board[x][y] -= dis;
 	attacked[x][y] = true;
 
+	int cx = back_x[x][y];
+	int cy = back_y[x][y];
+
 	int dir = vis[x][y];
 	int nx = x + dx[dir];
 	int ny = y + dy[dir];
 
 	dis /= 2;
-	while (vis[nx][ny] != -1) {
-		turlet[nx][ny].p -= dis;
-		board[nx][ny] -= dis;
-		attacked[nx][ny] = true;
+	while (!(cx == weak.x && cy == weak.y)) {
+		turlet[cx][cy].p -= dis;
+		board[cx][cy] -= dis;
+		if (board[cx][cy] < 0)
+			board[cx][cy] = 0;
+		attacked[cx][cy] = true;
 
-		dir = vis[nx][ny];
-		nx += dx[dir];
-		ny += dy[dir];
+		int next_cx = back_x[cx][cy];
+		int next_cy = back_y[cx][cy];
 
-		if (nx < 0) nx = N - 1;
-		else if (nx >= N) nx = 0;
-		if (ny < 0) ny = M - 1;
-		else if (ny >= M) ny = 0;
+		cx = next_cx;
+		cy = next_cy;
 	}
 }
 
@@ -110,13 +106,8 @@ void bomb_attack(info& weak, info& strong, int dis) {
 	dis /= 2;
 
 	for (int dir = 0; dir < 8; dir++) {
-		int nx = x + dx[dir];
-		int ny = y + dy[dir];
-
-		if (nx < 0) nx = N - 1;
-		else if (nx >= N) nx = 0;
-		if (ny < 0) ny = M - 1;
-		else if (ny >= M) ny = 0;
+		int nx = (x + dx[dir] + N) % N;
+		int ny = (y + dy[dir] + M) % M;
 
 		if (weak.x == nx && weak.y == ny) continue;
 		if (board[nx][ny] <= 0) continue;
@@ -152,8 +143,10 @@ void new_turlet() {
 void print() {
 	cout << '\n';
 	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < M; j++)
-			cout << vis[i][j] << ' ';
+		for (int j = 0; j < M; j++) {
+			if (board[i][j] < 0) cout << 0 << ' ';
+			else cout << board[i][j] << ' ';
+		}
 		cout << '\n';
 	}
 }
