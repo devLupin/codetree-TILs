@@ -104,6 +104,10 @@ vector<int> Check(vector<int> v) {
 				sIdx = i;
 			}
 		}
+		if (eIdx - sIdx >= 3) {
+			for (int j = sIdx; j <= eIdx; j++) vis[j] = true;
+			flag = true;
+		}
 
 		if (!flag) break;
 
