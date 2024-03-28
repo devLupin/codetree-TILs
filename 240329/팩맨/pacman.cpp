@@ -11,166 +11,124 @@ const int dy[] = { 0,-1,-1,-1,0,1,1,1 };
 const int ddx[] = { -1,0,1,0 };
 const int ddy[] = { 0,-1,0,1 };
 
-struct info {
-	int dir, cnt;
-	bool die;
-};
+const int SZ = 4;
+const int MAX_T = 25;
+const int DIR_NUM = 8;
+const int MAX_DECAY = 2;
 
-int M, T, px, py, ans;
-vector<info> monster[5][5], newMonster[5][5], nextMonster[5][5];
+int M, T, px, py, curT = 1;
+int monster[MAX_T][SZ][SZ][DIR_NUM];
+int dead[SZ][SZ][MAX_DECAY + 1];
 int cmp;
 string routes;
 
-void Copy() {
-	for (int i = 1; i <= 4; i++) {
-		for (int j = 1; j <= 4; j++) {
-			monster[i][j] = nextMonster[i][j];
-			nextMonster[i][j].clear();
+bool OOM(int x, int y) { return x < 0 || y < 0 || x >= SZ || y >= SZ; }
+
+bool Check(int x, int y) {
+	if (OOM(x, y)) return false;
+	if (dead[x][y][0] || dead[x][y][1]) return false;
+	if (x == px && y == py) return false;
+	return true;
+}
+
+tuple<int, int, int> GetNextPos(int x, int y, int move_dir) {
+	for (int dir = 0; dir < DIR_NUM; dir++) {
+		int nDir = (move_dir + dir + DIR_NUM) % DIR_NUM;
+		int nx = x + dx[nDir];
+		int ny = y + dy[nDir];
+		if (Check(nx, ny)) {
+			return make_tuple(nx, ny, nDir);
+		}
+	}
+
+	return make_tuple(x, y, move_dir);
+}
+
+void MoveMonster() {
+	for (int i = 0; i < SZ; i++)
+		for (int j = 0; j < SZ; j++)
+			for (int k = 0; k < DIR_NUM; k++) {
+				tuple<int, int, int> next_pos = GetNextPos(i, j, k);
+				auto [x, y, nDir] = next_pos;
+				monster[curT][x][y][nDir] += monster[curT - 1][i][j][k];
+			}
+}
+
+int GetKilledNum(int dir1, int dir2, int dir3) {
+	int dirs[] = { dir1, dir2, dir3 };
+	int x = px, y = py;
+	int killed_num = 0;
+	vector<pair<int, int> > vis;
+
+	for (int i = 0; i < 3; i++) {
+		int nx = x + ddx[dirs[i]];
+		int ny = y + ddy[dirs[i]];
+
+		if (OOM(nx, ny))
+			return -1;
+
+		if (find(vis.begin(), vis.end(), make_pair(nx, ny)) == vis.end()) {
+			for (int j = 0; j < DIR_NUM; j++)
+				killed_num += monster[curT][nx][ny][j];
+
+			vis.push_back(make_pair(nx, ny));
+		}
+
+		x = nx; y = ny;
+	}
+	return killed_num;
+}
+
+void Kill(tuple<int, int, int> route) {
+	auto[dir1, dir2, dir3] = route;
+
+	int dirs[] = { dir1, dir2, dir3 };
+	for (int i = 0; i < 3; i++) {
+		int nx = px + ddx[dirs[i]], ny = py + ddy[dirs[i]];
+
+		for (int j = 0; j < DIR_NUM; j++) {
+			dead[nx][ny][MAX_DECAY] += monster[curT][nx][ny][j];
+			monster[curT][nx][ny][j] = 0;
+		}
+
+		px = nx; py = ny;
+	}
+}
+
+void MovePackman() {
+	int max_cnt = -1;
+	tuple<int, int, int> route;
+
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++)
+			for (int k = 0; k < 4; k++) {
+				int m_cnt = GetKilledNum(i, j, k);
+
+				if (m_cnt > max_cnt) {
+					max_cnt = m_cnt;
+					route = make_tuple(i, j, k);
+				}
+			}
+
+	Kill(route);
+}
+
+void DecayMonster() {
+	for (int i = 0; i < SZ; i++) {
+		for (int j = 0; j < SZ; j++) {
+			for (int k = 0; k < MAX_DECAY; k++) {
+				dead[i][j][k] = dead[i][j][k + 1];
+			}
+			dead[i][j][MAX_DECAY] = 0;
 		}
 	}
 }
 
 void CopyMonster() {
-	for (int i = 1; i <= 4; i++) {
-		for (int j = 1; j <= 4; j++) {
-			for (auto& nxt : monster[i][j]) {
-				if (nxt.die) continue;
-				newMonster[i][j].push_back({ nxt.dir, 0, false });
-			}
-		}
-	}
-}
-
-bool OOM(int x, int y) { return x < 1 || y < 1 || x > 4 || y > 4; }
-
-bool Check(int x, int y) {
-	if (OOM(x, y)) return false;
-	if (x == px && y == py) return false;
-	for (auto& nxt : monster[x][y])
-		if (nxt.die) return false;
-	return true;
-}
-
-void MoveMonster() {
-	for (int i = 1; i <= 4; i++) {
-		for (int j = 1; j <= 4; j++) {
-			for (auto& nxt : monster[i][j]) {
-				if (nxt.die) {
-					nextMonster[i][j].push_back(nxt);
-					continue;
-				}
-				
-				bool flag = false;
-
-				for (int cnt = 0; cnt < 8; cnt++) {
-					int dir = (nxt.dir + cnt) % 8;
-					int nx = i + dx[dir];
-					int ny = j + dy[dir];
-
-					if (Check(nx, ny)) {
-						nextMonster[nx][ny].push_back({ dir, 0, false });
-						flag = true;
-						break;
-					}
-				}
-
-				if (!flag) nextMonster[i][j].push_back(nxt);
-			}
-		}
-	}
-
-	Copy();
-}
-
-void DFS(int x, int y, int cnt, string path) {
-	if (cnt == 3) {
-		map<pii, int> MAP;
-		int nx = px;
-		int ny = py;
-		int sum = 0;
-
-		for (char c : path) {
-			int dir = c - '0';
-			nx += ddx[dir];
-			ny += ddy[dir];
-
-			if (MAP[{nx, ny}] == 0) {
-				MAP[{nx, ny}] = 1;
-				
-				for (auto& nxt : monster[nx][ny])
-					if (!nxt.die) sum++;
-			}
-		}
-
-		if (cmp < sum) {
-			cmp = sum;
-			routes = path;
-		}
-
-		return;
-	}
-
-	for (int dir = 0; dir < 4; dir++) {
-		int nx = x + ddx[dir];
-		int ny = y + ddy[dir];
-		if (OOM(nx, ny)) continue;
-
-		DFS(nx, ny, cnt + 1, path + to_string(dir));
-	}
-}
-
-void MovePackman() {
-	cmp = -1;
-	routes = "333";
-	DFS(px, py, 0, "");
-
-	for (char c : routes) {
-		int dir = c - '0';
-
-		px += ddx[dir];
-		py += ddy[dir];
-
-		for (auto& nxt : monster[px][py]) {
-			if (!nxt.die) {
-				nxt.die = true;
-				nxt.cnt = 3;
-			}
-		}
-	}
-}
-
-void Done() {
-	int cnt = 0;
-
-	for (int i = 1; i <= 4; i++) {
-		for (int j = 1; j <= 4; j++) {
-			for (auto& nxt : monster[i][j]) {
-				cnt++;
-
-				if (nxt.die) {
-					cnt--;
-					if (nxt.cnt > 0)nxt.cnt--;
-					if (nxt.cnt == 0) continue;
-				}
-
-				nextMonster[i][j].push_back(nxt);
-			}
-		}
-	}
-
-	Copy();
-
-	for (int i = 1; i <= 4; i++) {
-		for (int j = 1; j <= 4; j++) {
-			for (auto& nxt : newMonster[i][j]) {
-				cnt++;
-				monster[i][j].push_back(nxt);
-			}
-			newMonster[i][j].clear();
-		}
-	}
-
-	ans = cnt;
+	for (int i = 0; i < SZ; i++)
+		for (int j = 0; j < SZ; j++)
+			for (int dir = 0; dir < DIR_NUM; dir++)
+				monster[curT][i][j][dir] += monster[curT - 1][i][j][dir];
 }
 
 int main(void)
@@ -184,17 +142,24 @@ int main(void)
 	while (M--) {
 		int x, y, d;
 		cin >> x >> y >> d;
-		monster[x][y].push_back({ d - 1, 0, false });
+		monster[0][x - 1][y - 1][d - 1]++;
 	}
 	
-	while (T--) {
-		CopyMonster();
+	while (curT <= T) {
 		MoveMonster();
 		MovePackman();
-		Done();
+		DecayMonster();
+		CopyMonster();
+
+		curT++;
 	}
 
-	cout << ans;
+	int ans = 0;
+	for (int i = 0; i < SZ; i++)
+		for (int j = 0; j < SZ; j++)
+			for (int dir = 0; dir < DIR_NUM; dir++)
+				ans += monster[T][i][j][dir];
 
+	cout << ans;
 	return 0;
 }
