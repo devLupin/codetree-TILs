@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include<bits/stdc++.h>
 using namespace std;
 
@@ -14,7 +15,7 @@ struct info {
 
 int M, T, px, py, ans, cmp = -1;
 vector<info> monster[5][5], next_monster[5][5];
-bool vis[5][5];
+bool vis[7][7];
 vector<int> routes;
 
 bool OOM(int x, int y) { return x < 1 || y < 1 || x > 4 || y > 4; }
@@ -105,7 +106,7 @@ void dfs(int x, int y, int cnt, int sum, vector<int> v) {
 }
 
 void MovePackman() {
-    fill(&vis[0][0], &vis[4][4], false);
+    fill(&vis[1][1], &vis[5][5], false);
 
     vis[px][py] = true;
     dfs(px, py, 0, 0, {});
@@ -146,10 +147,26 @@ void Done() {
     ans = cnt;
 }
 
+void Print() {
+    cout << "\n\n";
+
+    for (int i = 1; i <= 4; i++) {
+        for (int j = 1; j <= 4; j++) {
+            for (auto& nxt : monster[i][j]) {
+                cout << '[' << i << ", " << j << "] - ";
+                cout << ((nxt.alive) ? "alive" : "die") << ", ";
+                cout << ((nxt.stun) ? "stun" : "no-stun") << "\n";
+            }
+        }
+    }
+}
+
 int main(void)
 {
     ios::sync_with_stdio(false); 
     cin.tie(NULL);
+
+    // freopen("input.txt", "r", stdin);
 
     cin >> M >> T >> px >> py;
     for (int i = 0; i < M; i++) {
