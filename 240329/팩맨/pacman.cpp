@@ -25,10 +25,8 @@ string routes;
 bool OOM(int x, int y) { return x < 0 || y < 0 || x >= SZ || y >= SZ; }
 
 bool Check(int x, int y) {
-	if (OOM(x, y)) return false;
-	if (dead[x][y][0] || dead[x][y][1]) return false;
-	if (x == px && y == py) return false;
-	return true;
+	return !OOM(x, y) && dead[x][y][0] == 0 && dead[x][y][1] == 0
+		&& make_pair(x, y) != make_pair(px, py);
 }
 
 tuple<int, int, int> GetNextPos(int x, int y, int move_dir) {
@@ -136,7 +134,7 @@ int main(void)
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
 
-	// freopen("input.txt", "r", stdin);
+	freopen("input.txt", "r", stdin);
 
 	cin >> M >> T >> px >> py;
 	while (M--) {
