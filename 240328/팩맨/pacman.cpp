@@ -115,7 +115,7 @@ void MovePackman() {
 
 	vis[px][py] = true;
 	routes = "999";
-	dfs(px, py, 0, 0, {});
+	dfs(px, py, 0, 0, "");
 
 	// ↑, ←, ↓, →
 	for (char& d : routes) {
@@ -125,7 +125,7 @@ void MovePackman() {
 
 		for (auto& nxt : monster[px][py]) {
 			if (nxt.stun) continue;
-			nxt.die = 3;
+			nxt.die = 2;
 			nxt.alive = false;
 		}
 	}
