@@ -90,7 +90,7 @@ void MovePerson() {
 	}
 }
 
-tuple<int, int, int> Round(int t) {
+tuple<int, int, int> Round() {
 	int x, y;
 
 	if (cnt == N) {
@@ -100,8 +100,8 @@ tuple<int, int, int> Round(int t) {
 
 	if (attack_dir == 0) tie(x, y) = make_tuple(cnt, 0);
 	if (attack_dir == 1) tie(x, y) = make_tuple(N - 1, cnt);
-	if (attack_dir == 2) tie(x, y) = make_tuple(cnt, N - 1);
-	if (attack_dir == 3) tie(x, y) = make_tuple(0, cnt);
+	if (attack_dir == 2) tie(x, y) = make_tuple(N - 1 - cnt, N - 1);
+	if (attack_dir == 3) tie(x, y) = make_tuple(0, N - 1 - cnt);
 
 	return make_tuple(x, y, attack_dir);
 }
@@ -169,7 +169,7 @@ int main(void) {
 		Init();
 		GetCompare();
 		MovePerson();
-		Attack(Round(t));
+		Attack(Round());
 		cnt++;
 	}
 
