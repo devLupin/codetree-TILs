@@ -5,15 +5,16 @@
 using namespace std;
 using pii = pair<int, int>;
 
-const int dx[] = { 0,-1,0,1 };
-const int dy[] = { 1,0,-1,0 };
-
 const int MEM_SZ = 6;
 const int SZ = 21;
+const int DIR_SZ = 4;
 
-int N, M, K, board[SZ][SZ], ans, idx = -1;
+const int dx[DIR_SZ] = { 0,-1,0,1 };
+const int dy[DIR_SZ] = { 1,0,-1,0 };
+
+int N, M, K, board[SZ][SZ], ans, idx;
 bool vis[SZ][SZ];
-vector<pii> head, tail;
+vector<pii> head, tail, compare;
 vector<pii> member[MEM_SZ];
 int cnt, attack_dir;
 
@@ -21,61 +22,66 @@ bool OOM(int x, int y) { return x < 0 || y < 0 || x >= N || y >= N; }
 
 void Init() {
 	idx = -1;
-	for (int i = 0; i < M; i++) member[i].clear();
+	compare.clear();
 	fill(&vis[0][0], &vis[N][N], false);
+	for (int i = 0; i < M; i++) member[i].clear();
 }
 
-void SearchTail() {
-	for (int i = 0; i < M; i++) {
-		auto& nxt = head[i];
-		int v = board[nxt.X][nxt.Y];
+void GetCompare() {
+	for (auto& nxt : head) {
+		int cmp = board[nxt.X][nxt.Y];
+		int cx, cy;
 
-		for (int dir = 0; dir < 4; dir++) {
+		for (int dir = 0; dir < DIR_SZ; dir++) {
 			int nx = nxt.X + dx[dir];
 			int ny = nxt.Y + dy[dir];
-			int nv = board[nx][ny];
 
-			if (OOM(nx, ny)) continue;
-
-			if (v < nv) {
-				v = nv;
-				tail[i] = { nx, ny };
+			if (OOM(nx, ny) || board[nx][ny] == 0) continue;
+			if (cmp < board[nx][ny]) {
+				cmp = board[nx][ny];
+				tie(cx, cy) = make_pair(nx, ny);
 			}
 		}
+
+		compare.push_back({ cx, cy });
 	}
 }
 
 void DFS(int x, int y) {
-	int cx, cy, cv = board[x][y];
+	int cv = board[x][y];
+	int cx, cy;
 
-	for (int dir = 0; dir < 4; dir++) {
+	for (int dir = 0; dir < DIR_SZ; dir++) {
 		int nx = x + dx[dir];
 		int ny = y + dy[dir];
-		int nv = board[nx][ny];
 
 		if (OOM(nx, ny) || board[nx][ny] == 0 || vis[nx][ny]) continue;
-		if (cv > nv)
-			tie(cx, cy, cv) = make_tuple(nx, ny, nv);
+
+		if (cv > board[nx][ny]) {
+			cv = board[nx][ny];
+			tie(cx, cy) = make_pair(nx, ny);
+		}
 	}
 
-	if (board[x][y] == cv) {
-		if (board[x][y] != 4)
-			member[idx].push_back({ x, y });
+	if (cv == board[x][y]) {
+		if (cv == 3) member[idx].push_back({ x, y });
 		return;
 	}
 
-	if (cv == 1) idx++;
+	if (board[cx][cy] == 1) idx++;
+
 	member[idx].push_back({ x, y });
 	swap(board[x][y], board[cx][cy]);
-
 	vis[cx][cy] = true;
+	
 	DFS(cx, cy);
 }
 
 void MovePerson() {
-	for (pii& nxt : tail) {
+	for (auto& nxt : compare) {
 		vis[nxt.X][nxt.Y] = true;
 		DFS(nxt.X, nxt.Y);
+		member;
 	}
 
 	for (int i = 0; i < M; i++) {
@@ -100,40 +106,33 @@ tuple<int, int, int> Round(int t) {
 	return make_tuple(x, y, attack_dir);
 }
 
-void FindPerson(int x, int y) {
+void Search(int x, int y) {
 	for (int i = 0; i < M; i++) {
-		int len = member[i].size();
-
-		for (int j = 0; j < len; j++) {
+		for (int j = 0; j < member[i].size(); j++) {
 			auto& nxt = member[i][j];
-			if (nxt.X == x && nxt.Y == y) {
+
+			if (x == nxt.X && y == nxt.Y) {
+				pii tmp = head[i];
+				head[i] = tail[i];
+				tail[i] = tmp;
+
+				swap(board[head[i].X][head[i].Y], board[tail[i].X][tail[i].Y]);
+
 				j++;
 				ans += (j * j);
-
-				auto& cur_head = member[i][0];
-				auto& cur_tail = member[i][len - 1];
-
-				swap(board[cur_head.X][cur_head.Y], board[cur_tail.X][cur_tail.Y]);
-				head[i] = cur_tail;
-
-				SearchTail();
-
-				head, tail;
-
 				return;
 			}
 		}
 	}
 }
 
-void Attack(tuple<int, int, int> info) {
-	auto [x, y, dir] = info;
-	bool flag = false;
+void Attack(tuple<int,int,int> next_round) {
+	auto& [x, y, dir] = next_round;
 
 	while (!OOM(x, y)) {
 		if (board[x][y] > 0 && board[x][y] < 4) {
-			FindPerson(x, y);
-			return;
+			Search(x, y);
+			break;
 		}
 
 		x += dx[dir];
@@ -144,8 +143,9 @@ void Attack(tuple<int, int, int> info) {
 void Print() {
 	cout << "\n\n";
 	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++)
+		for (int j = 0; j < N; j++) {
 			cout << board[i][j] << ' ';
+		}
 		cout << '\n';
 	}
 }
@@ -161,18 +161,15 @@ int main(void) {
 		for (int j = 0; j < N; j++) {
 			cin >> board[i][j];
 			if (board[i][j] == 1) head.push_back({ i,j });
+			else if (board[i][j] == 3) tail.push_back({ i,j });
 		}
 	}
 
-	tail.assign(head.begin(), head.end());
-	SearchTail();
-
 	for (int t = 1; t <= K; t++) {
 		Init();
+		GetCompare();
 		MovePerson();
-		auto info = Round(t);
-		Attack(info);
-
+		Attack(Round(t));
 		cnt++;
 	}
 
