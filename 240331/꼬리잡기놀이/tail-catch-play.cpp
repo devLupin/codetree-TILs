@@ -1,178 +1,216 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <bits/stdc++.h>
-#define X first
-#define Y second
+#include <iostream>
+#include <vector>
+
+#define MAX_N 20
+#define MAX_M 5
+#define DIR_NUM 4
+
 using namespace std;
-using pii = pair<int, int>;
 
-const int MEM_SZ = 6;
-const int SZ = 21;
-const int DIR_SZ = 4;
+int n, m, k;
+int board[MAX_N + 1][MAX_N + 1];
 
-const int dx[DIR_SZ] = { 0,-1,0,1 };
-const int dy[DIR_SZ] = { 1,0,-1,0 };
+// 각 팀별 레일 위치를 관리합니다.
+vector<pair<int, int> > v[MAX_M + 1];
+// 각 팀별 tail 위치를 관리합니다.
+int tail[MAX_M + 1];
+bool visited[MAX_N + 1][MAX_N + 1];
 
-int N, M, K, board[SZ][SZ], ans, idx;
-bool vis[SZ][SZ];
-vector<pii> head, tail, compare;
-vector<pii> member[MEM_SZ];
-int cnt, attack_dir;
+// 격자 내 레일에 각 팀 번호를 적어줍니다.
+int board_idx[MAX_N + 1][MAX_N + 1];
 
-bool OOM(int x, int y) { return x < 0 || y < 0 || x >= N || y >= N; }
+int ans;
 
+int dx[DIR_NUM] = {-1, 0, 1, 0};
+int dy[DIR_NUM] = {0, -1, 0, 1};
+
+bool IsOutRange(int x, int y) {
+    return !(1 <= x && x <= n && 1 <= y && y <= n);
+}
+
+// 초기 레일을 만들기 위해 dfs를 이용합니다.
+void DFS(int x, int y, int idx) {
+    visited[x][y] = true;
+    board_idx[x][y] = idx;
+    for(int i = 0; i < 4; i++) {
+        int nx = x + dx[i];
+        int ny = y + dy[i];
+        if(IsOutRange(nx, ny)) continue;
+
+        // 이미 지나간 경로거나 경로가 아니면 넘어갑니다.
+        if(board[nx][ny] == 0) continue;
+        if(visited[nx][ny]) continue;
+
+        // 가장 처음 탐색할 때 2가 있는 방향으로 dfs를 진행합니다.
+        if((int) v[idx].size() == 1 && board[nx][ny] != 2) continue;
+
+        v[idx].push_back({nx, ny});
+        if(board[nx][ny] == 3) tail[idx] = (int) v[idx].size();
+        DFS(nx, ny, idx);
+    }
+}
+
+// 입력을 받는 등 초기 작업을 합니다.
 void Init() {
-	idx = -1;
-	compare.clear();
-	fill(&vis[0][0], &vis[N][N], false);
-	for (int i = 0; i < M; i++) member[i].clear();
+    cin >> n >> m >> k;
+    for(int i = 1; i <= n; i++)
+        for(int j = 1; j <= n; j++)
+            cin >> board[i][j];
+
+    int cnt = 1;
+
+    // 레일을 벡터에 저장합니다. 머리사람을 우선 앞에 넣어줍니다.
+    for(int i = 1; i <= n; i++)
+        for(int j = 1; j <= n; j++)
+            if(board[i][j] == 1) v[cnt++].push_back({i, j});
+
+    // dfs를 통해 레일을 벡터에 순서대로 넣어줍니다.
+    for(int i = 1; i <= m; i++)
+        DFS(v[i][0].first, v[i][0].second, i);
 }
 
-void GetCompare() {
-	for (auto& nxt : head) {
-		int cmp = board[nxt.X][nxt.Y];
-		int cx, cy;
+// 각 팀을 이동시키는 함수입니다.
+void MoveAll() {
+    for(int i = 1; i <= m; i++) {
+        // 각 팀에 대해 레일을 한 칸씩 뒤로 이동시킵니다.
+        pair<int, int> tmp = v[i].back();
+        for(int j = (int) v[i].size() - 1; j >= 1; j--)
+            v[i][j] = v[i][j - 1];
+        v[i][0] = tmp;
+    }
 
-		for (int dir = 0; dir < DIR_SZ; dir++) {
-			int nx = nxt.X + dx[dir];
-			int ny = nxt.Y + dy[dir];
-
-			if (OOM(nx, ny) || board[nx][ny] == 0) continue;
-			if (cmp < board[nx][ny]) {
-				cmp = board[nx][ny];
-				tie(cx, cy) = make_pair(nx, ny);
-			}
-		}
-
-		compare.push_back({ cx, cy });
-	}
+    for(int i = 1; i <= m; i++) {
+        // 벡터에 저장한 정보를 바탕으로 보드의 표기 역시 바꿔줍니다.
+        for(int j = 0; j < (int) v[i].size(); j++) {
+            pair<int, int> x = v[i][j];
+            if(j == 0)
+                board[x.first][x.second] = 1;
+            else if(j < tail[i] - 1)
+                board[x.first][x.second] = 2;
+            else if(j == tail[i] - 1)
+                board[x.first][x.second] = 3;
+            else
+                board[x.first][x.second] = 4;
+        }
+    }
 }
 
-void DFS(int x, int y) {
-	int cv = board[x][y];
-	int cx, cy;
-
-	for (int dir = 0; dir < DIR_SZ; dir++) {
-		int nx = x + dx[dir];
-		int ny = y + dy[dir];
-
-		if (OOM(nx, ny) || board[nx][ny] == 0 || vis[nx][ny]) continue;
-
-		if (cv > board[nx][ny]) {
-			cv = board[nx][ny];
-			tie(cx, cy) = make_pair(nx, ny);
-		}
-	}
-
-	if (cv == board[x][y]) {
-		if (cv == 3) member[idx].push_back({ x, y });
-		return;
-	}
-
-	if (board[cx][cy] == 1) idx++;
-
-	member[idx].push_back({ x, y });
-	swap(board[x][y], board[cx][cy]);
-	vis[cx][cy] = true;
-	
-	DFS(cx, cy);
+// (x, y) 지점에 공이 닿았을 때의 점수를 계산합니다.
+void GetPoint(int x, int y) {
+    int idx = board_idx[x][y];
+    int cnt = 0;
+    for(int i = 0; i < (int) v[idx].size(); i++)
+        if(v[idx][i].first == x && v[idx][i].second == y) cnt = i;
+    ans += (cnt + 1) * (cnt + 1);
 }
 
-void MovePerson() {
-	for (auto& nxt : compare) {
-		vis[nxt.X][nxt.Y] = true;
-		DFS(nxt.X, nxt.Y);
-		member;
-	}
+// turn 번째 라운드의 공을 던집니다.
+// 공을 던졌을 때 이를 받은 팀의 번호를 반환합니다.
+int ThrowBall(int turn) {
+    int t = (turn - 1) % (4 * n) + 1;
 
-	for (int i = 0; i < M; i++) {
-		head[i] = member[i].front();
-		tail[i] = member[i].back();
-	}
+    if(t <= n) {
+        // 1 ~ n 라운드의 경우 왼쪽에서 오른쪽 방향으로 공을 던집니다.
+        for(int i = 1; i <= n; i++) {
+            if(1 <= board[t][i] && board[t][i] <= 3) {
+                // 사람이 있는 첫 번째 지점을 찾습니다.
+                // 찾게 되면 점수를 체크한 뒤 찾은 사람의 팀 번호를 저장합니다.
+                GetPoint(t, i);
+                return board_idx[t][i];
+            }
+        }
+    }
+    else if(t <= 2 * n) {
+        // n+1 ~ 2n 라운드의 경우 아래에서 윗쪽 방향으로 공을 던집니다.
+        t -= n;
+        for(int i = 1; i <= n; i++) {
+            if(1 <= board[n + 1 - i][t] && board[n + 1 - i][t] <= 3) {
+                // 사람이 있는 첫 번째 지점을 찾습니다.
+                // 찾게 되면 점수를 체크한 뒤 찾은 사람의 팀 번호를 저장합니다.
+                GetPoint(n + 1 - i, t);
+                return board_idx[n + 1 - i][t];
+            }
+        }
+    }
+    else if(t <= 3 * n) {
+        // 2n+1 ~ 3n 라운드의 경우 오른쪽에서 왼쪽 방향으로 공을 던집니다.
+        t -= (2 * n);
+        for(int i = 1; i <= n; i++) {
+            if(1 <= board[n + 1 - t][n + 1 - i] && board[n + 1 - t][n + 1 - i] <= 3) {
+                // 사람이 있는 첫 번째 지점을 찾습니다.
+                // 찾게 되면 점수를 체크한 뒤 찾은 사람의 팀 번호를 저장합니다.
+                GetPoint(n + 1 - t, n + 1 - i);
+                return board_idx[n + 1 - t][n + 1 - i];
+            }
+        }
+    }
+    else {
+        // 3n+1 ~ 4n 라운드의 경우 위에서 아랫쪽 방향으로 공을 던집니다.
+        t -= (3 * n);
+        for(int i = 1; i <= n; i++) {
+            if(1 <= board[i][n + 1 - t] && board[i][n + 1 - t] <= 3) {
+                // 사람이 있는 첫 번째 지점을 찾습니다.
+                // 찾게 되면 점수를 체크한 뒤 찾은 사람의 팀 번호를 저장합니다.
+                GetPoint(i, n + 1 - t);
+                return board_idx[i][n + 1 - t];
+            }
+        }
+    }
+    // 공이 그대로 지나간다면 0을 반환합니다.
+    return 0;
 }
 
-tuple<int, int, int> Round() {
-	int x, y;
+// 공을 획득한 팀을 순서를 바꿉니다.
+void Reverse(int got_ball_idx) {
+    // 아무도 공을 받지 못했으면 넘어갑니다.
+    if(got_ball_idx == 0) return;
 
-	if (cnt == N) {
-		cnt = 0;
-		attack_dir = (attack_dir + 1) % 4;
-	}
+    int idx = got_ball_idx;
 
-	if (attack_dir == 0) tie(x, y) = make_tuple(cnt, 0);
-	if (attack_dir == 1) tie(x, y) = make_tuple(N - 1, cnt);
-	if (attack_dir == 2) tie(x, y) = make_tuple(N - 1 - cnt, N - 1);
-	if (attack_dir == 3) tie(x, y) = make_tuple(0, N - 1 - cnt);
+    vector<pair<int, int> > new_v;
 
-	return make_tuple(x, y, attack_dir);
+    // 순서를 맞춰 new_v에 레일을 넣어줍니다.
+    for(int i = tail[idx] - 1; i >= 0; i--) {
+        pair<int, int> x = v[idx][i];
+        new_v.push_back(x);
+    }
+
+    for(int i = (int) v[idx].size() - 1; i >= tail[idx]; i--) {
+        pair<int, int> x = v[idx][i];
+        new_v.push_back(x);
+    }
+
+    v[idx] = new_v;
+
+    // 벡터에 저장한 정보를 바탕으로 보드의 표기 역시 바꿔줍니다.
+    for(int j = 0; j < (int) v[idx].size(); j++) {
+        pair<int, int> x = v[idx][j];
+        if(j == 0)
+            board[x.first][x.second] = 1;
+        else if(j < tail[idx] - 1)
+            board[x.first][x.second] = 2;
+        else if(j == tail[idx] - 1)
+            board[x.first][x.second] = 3;
+        else
+            board[x.first][x.second] = 4;
+    }
 }
 
-void Search(int x, int y) {
-	for (int i = 0; i < M; i++) {
-		for (int j = 0; j < member[i].size(); j++) {
-			auto& nxt = member[i][j];
+int main() {
+    // 입력을 받고 구현을 위한 기본적인 처리를 합니다.
+    Init();
 
-			if (x == nxt.X && y == nxt.Y) {
-				pii tmp = head[i];
-				head[i] = tail[i];
-				tail[i] = tmp;
+    for(int i = 1; i <= k; i++) {
+        // 각 팀을 머리사람을 따라 한칸씩 이동시킵니다.
+        MoveAll();
 
-				swap(board[head[i].X][head[i].Y], board[tail[i].X][tail[i].Y]);
+        // i번째 라운드의 공을 던집니다. 공을 받은 사람을 찾아 점수를 추가합니다.
+        int got_ball_idx = ThrowBall(i);
 
-				j++;
-				ans += (j * j);
-				return;
-			}
-		}
-	}
-}
+        // 공을 획득한 팀의 방향을 바꿉니다.
+        Reverse(got_ball_idx);
+    }
 
-void Attack(tuple<int,int,int> next_round) {
-	auto& [x, y, dir] = next_round;
-
-	while (!OOM(x, y)) {
-		if (board[x][y] > 0 && board[x][y] < 4) {
-			Search(x, y);
-			break;
-		}
-
-		x += dx[dir];
-		y += dy[dir];
-	}
-}
-
-void Print() {
-	cout << "\n\n";
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			cout << board[i][j] << ' ';
-		}
-		cout << '\n';
-	}
-}
-
-int main(void) {
-	ios::sync_with_stdio(false);
-	cin.tie(NULL);
-
-	// freopen("input.txt", "r", stdin);
-
-	cin >> N >> M >> K;
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			cin >> board[i][j];
-			if (board[i][j] == 1) head.push_back({ i,j });
-			else if (board[i][j] == 3) tail.push_back({ i,j });
-		}
-	}
-
-	for (int t = 1; t <= K; t++) {
-		Init();
-		GetCompare();
-		MovePerson();
-		Attack(Round());
-		cnt++;
-	}
-
-	cout << ans;
-	return 0;
+    cout << ans;
+    return 0;
 }
