@@ -73,6 +73,8 @@ void Spread(int x, int y, int d) {
         auto cur = q.front();
         q.pop();
 
+        if (cur.d == 0) continue;
+
         for (int dir : dirs) {
             int nx = cur.x + dx[dir];
             int ny = cur.y + dy[dir];
@@ -200,7 +202,7 @@ int main(void) {
     }
 
     int cnt = 0, ans = -1;
-    while (cnt++ <= 100) {
+    while (cnt++ <= 16) {
         for (auto& nxt : aircon) {
             int dir = nxt.dir;
             int nx = nxt.x + dx[dir];
