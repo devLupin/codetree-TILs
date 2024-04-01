@@ -45,16 +45,16 @@ bool CanGo(int x, int y, int dir, int origin_dir) {
         if (!wall[top_x][top_y][3] && !wall[top_x][top_y][2]) return true;
     }
     else if (dir == 6) {     // 우측아래
-        int down_x = x + dx[3];
-        int down_y = y + dy[3];
+        int right_x = x + dx[2];
+        int right_y = y + dy[2];
 
-        if (!wall[down_x][down_y][1] && !wall[down_x][down_y][2]) return true;
+        if(!wall[right_x][right_y][0] && !wall[right_x][right_y][3]) return true;
     }
     else if (dir == 7) {      // 좌측아래
-        int down_x = x + dx[3];
-        int down_y = y + dy[3];
+        int left_x = x + dx[0];
+        int left_y = y + dy[0];
 
-        if (!wall[down_x][down_y][1] && !wall[down_x][down_y][0]) return true;
+        if (!wall[left_x][left_y][2] && !wall[left_x][left_y][3]) return true;
     }
 
     return false;
