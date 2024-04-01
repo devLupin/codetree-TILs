@@ -202,7 +202,7 @@ int main(void) {
     }
 
     int cnt = 0, ans = -1;
-    while (cnt++ <= 16) {
+    while (cnt++ <= 100) {
         for (auto& nxt : aircon) {
             int dir = nxt.dir;
             int nx = nxt.x + dx[dir];
