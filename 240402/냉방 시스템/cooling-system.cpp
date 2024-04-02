@@ -1,170 +1,170 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
+#define X first
+#define Y second
 using namespace std;
+using pii = pair<int,int>;
 
 const int SZ = 25;
-// 좌, 위, 우, 아래, 좌측위, 우측위, 우측아래, 좌측아래
-const int dx[] = { 0,-1,0,1,-1,-1,1,1 };
-const int dy[] = { -1,0,1,0,-1,1,1,-1 };
+const int DIR_NUM = 4;
+enum {LEFT, UP, RIGHT, DOWN};
 
-struct info { int x, y, dir; };
-struct pos { int x, y, d; };
-vector<info> aircon;
-int N, M, K, board[SZ][SZ], A[SZ][SZ], B[SZ][SZ];
+// 좌, 상, 우, 하
+const int dx[DIR_NUM] = {0,-1,0,1};
+const int dy[DIR_NUM] = {-1,0,1,0};
+// 좌상, 우상, 우하, 좌하
+const int ddx[DIR_NUM] = {-1,-1,1,1};
+const int ddy[DIR_NUM] = {-1,1,1,-1};
+
+int N, M, K, A[SZ][SZ], B[SZ][SZ];
 bool wall[SZ][SZ][4];
 bool vis[SZ][SZ];
 
-bool OOM(int x, int y) { return x < 1 || y < 1 || x > N || y > N; }
+struct info {int x, y, d;};
+vector<info> aircon;
+vector<pii> office;
 
-vector<int> GetDirs(int d) {
-    vector<int> ret;
 
-    if (d == 0) ret = { 0, 4, 7 };
-    if (d == 1) ret = { 1, 4, 5 };
-    if (d == 2) ret = { 2, 5, 6 };
-    if (d == 3) ret = { 3, 6, 7 };
+bool OOM(int x, int y) {return x < 1 || y < 1 || x > N || y > N;}
 
-    return ret;
+vector<int> DirList(int dir) {
+    vector<int> dirs;
+
+    if(dir == 0) dirs = {0, 3};
+    if(dir == 1) dirs = {0, 1};
+    if(dir == 2) dirs = {1, 2};
+    if(dir == 3) dirs = {2, 3};
+
+    return dirs;
 }
 
-// 좌, 위, 우, 아래
-// 4
-// 좌측상단, 우측상단, 우측아래, 좌측아래
-bool CanGo(int x, int y, int dir, int origin_dir) {
-
-    if (dir == 4) {      // 좌측위
-        int top_x = x + dx[1];
-        int top_y = y + dy[1];
-
-        if (!wall[top_x][top_y][3] && !wall[top_x][top_y][0]) return true;
-    }
-    else if (dir == 5) {     // 우측위
-        int top_x = x + dx[1];
-        int top_y = y + dy[1];
-
-        if (!wall[top_x][top_y][3] && !wall[top_x][top_y][2]) return true;
-    }
-    else if (dir == 6) {     // 우측아래
-        int right_x = x + dx[2];
-        int right_y = y + dy[2];
-
-        if(!wall[right_x][right_y][0] && !wall[right_x][right_y][3]) return true;
-    }
-    else if (dir == 7) {      // 좌측아래
-        int left_x = x + dx[0];
-        int left_y = y + dy[0];
-
-        if (!wall[left_x][left_y][2] && !wall[left_x][left_y][3]) return true;
+// 에어컨 방향, 이동하려는 방향
+bool Check(int x, int y, int dir, int ndir) {
+    if (dir == LEFT) {
+        if (ndir == 0) return !wall[x][y][UP] && !wall[x - 1][y][LEFT];
+        if (ndir == 3) return !wall[x][y][DOWN] && !wall[x + 1][y][LEFT];
     }
 
-    return false;
+    else  if (dir == UP) {
+        if (ndir == 0) return !wall[x][y][LEFT] && !wall[x][y - 1][UP];
+        if (ndir == 1) return !wall[x][y][RIGHT] && !wall[x][y + 1][UP];
+    }
+
+    else  if (dir == RIGHT) {
+        if (ndir == 1) return !wall[x][y][UP] && !wall[x - 1][y][RIGHT];
+        if (ndir == 2) return !wall[x][y][DOWN] && !wall[x + 1][y][RIGHT];
+    }
+
+    else  if (dir == DOWN) {
+        if (ndir == 2) return !wall[x][y][RIGHT] && !wall[x][y + 1][DOWN];
+        if (ndir == 3) return !wall[x][y][LEFT] && !wall[x][y - 1][DOWN];
+    }
 }
 
-void Spread(int x, int y, int d) {
-    auto dirs = GetDirs(d);
-    queue<pos> q;
-    fill(&vis[1][1], &vis[N + 1][N + 1], false);
+void Spread(int x, int y, int dir) {
+    queue<info> q;
 
-    q.push({ x, y, 5 });
-    A[x][y] += 5;
+    auto ddir = DirList(dir);
+
+    q.push({x, y, 5});
     vis[x][y] = true;
+    A[x][y] += 5;
 
-    while (!q.empty()) {
-        auto cur = q.front();
+    while(!q.empty()) {
+        info cur = q.front();
         q.pop();
 
-        if (cur.d == 0) continue;
+        if(cur.d == 1) continue;
 
-        for (int dir : dirs) {
-            int nx = cur.x + dx[dir];
-            int ny = cur.y + dy[dir];
+        int nx = cur.x + dx[dir];
+        int ny = cur.y + dy[dir];
+        int nc = cur.d - 1;
 
-            if (OOM(nx, ny) || vis[nx][ny]) continue;
+        if(!OOM(nx, ny) && !vis[nx][ny] && !wall[cur.x][cur.y][dir]) {
+            q.push({nx, ny, nc});
+            vis[nx][ny] = true;
+            A[nx][ny] += nc;
+        }
 
-            if (dir < 4 && !wall[cur.x][cur.y][dir]) {
-                q.push({ nx, ny, cur.d - 1 });
+        for(int nd : ddir) {
+            nx = cur.x + ddx[nd];
+            ny = cur.y + ddy[nd];
+            
+            if(!OOM(nx, ny) && !vis[nx][ny] && Check(cur.x, cur.y, dir, nd)) {
+                q.push({nx, ny, nc});
                 vis[nx][ny] = true;
-                A[nx][ny] += (cur.d - 1);
-            }
-            else if (dir >= 4 && CanGo(cur.x, cur.y, dir, d)) {
-                q.push({ nx, ny, cur.d - 1 });
-                vis[nx][ny] = true;
-                A[nx][ny] += (cur.d - 1);
+                A[nx][ny] += nc;
             }
         }
+    }
+}
+
+void Cooling() {
+    for(auto& cur : aircon) {
+        int nx = cur.x + dx[cur.d];
+        int ny = cur.y + dy[cur.d];
+        
+        fill(&vis[1][1], &vis[N+1][N+1], false);
+        Spread(nx, ny, cur.d);
     }
 }
 
 void Mix() {
-    fill(&vis[1][1], &vis[N + 1][N + 1], false);
+    for(int x=1; x<=N; x++) {
+        for(int y=1; y<=N; y++) {
+            for(int dir : {RIGHT, DOWN}) {
+                int nx = x + dx[dir];
+                int ny = y + dy[dir];
 
-    for (int i = 1; i <= N; i++) {
-        for (int j = 1; j <= N; j++) {
-            if (vis[i][j]) continue;
-            vis[i][j] = true;
+                if(OOM(nx, ny) || wall[x][y][dir]) continue;
 
-            for (int dir : {2, 3}) {
-                int nx = i + dx[dir];
-                int ny = j + dy[dir];
+                int diff = abs(A[x][y] - A[nx][ny]) / 4;
 
-                if (OOM(nx, ny) || wall[i][j][dir]) continue;
-
-                int diff;
-
-                if (A[i][j] > A[nx][ny]) {
-                    diff = A[i][j] - A[nx][ny];
-                    diff /= 4;
-                    if (diff > 0) {
-                        B[i][j] -= diff;
-                        B[nx][ny] += diff;
-                    }
+                if(A[x][y] > A[nx][ny]) {
+                    B[x][y] -= diff;
+                    B[nx][ny] += diff;
                 }
                 else {
-                    diff = A[nx][ny] - A[i][j];
-                    diff /= 4;
-                    if (diff > 0) {
-                        B[nx][ny] -= diff;
-                        B[i][j] += diff;
-                    }
+                    B[x][y] += diff;
+                    B[nx][ny] -= diff;
                 }
             }
         }
     }
 
-    for (int i = 1; i <= N; i++) {
-        for (int j = 1; j <= N; j++) {
-            A[i][j] += B[i][j];
-            B[i][j] = 0;
+    for(int x=1; x<=N; x++) {
+        for(int y=1; y<=N; y++) {
+            A[x][y] += B[x][y];
+            B[x][y] = 0;
         }
     }
 }
 
 void Decrease() {
-    fill(&vis[1][1], &vis[N + 1][N + 1], false);
+    A[1][1] = max(0, A[1][1] - 1);
+    A[1][N] = max(0, A[1][N] - 1);
+    A[N][1] = max(0, A[N][1] - 1);
+    A[N][N] = max(0, A[N][N] - 1);
 
-    for (int i = 1; i <= N; i++) {
-        for (int j = 1; j <= N; j++) {
-            if (vis[i][j]) continue;
-
-            if (i == 1 || j == 1 || i == N || j == N) {
-                if (A[i][j] > 0) A[i][j]--;
-                vis[i][j] = true;
-            }
-        }
+    for(int i=2; i<N; i++) {
+        A[i][1] = max(0, A[i][1] - 1);
+        A[i][N] = max(0, A[i][N] - 1);
+    }
+    for(int j=2; j<N; j++) {
+        A[1][j] = max(0, A[1][j] - 1);
+        A[N][j] = max(0, A[N][j] - 1);
     }
 }
 
-bool Calc() {
-    for (int i = 1; i <= N; i++)
-        for (int j = 1; j <= N; j++)
-            if (board[i][j] == 1 && A[i][j] < K) return false;
+bool Satisfied() {
+    for(auto& nxt : office)
+        if(A[nxt.X][nxt.Y] < K) return false;
     return true;
 }
 
 void Print() {
     cout << "\n\n";
-    for (int i = 1; i <= N; i++) {
-        for (int j = 1; j <= N; j++)
+    for(int i=1; i<=N; i++) {
+        for(int j=1; j<=N; j++)
             cout << A[i][j] << ' ';
         cout << '\n';
     }
@@ -177,44 +177,40 @@ int main(void) {
     // freopen("input.txt", "r", stdin);
 
     cin >> N >> M >> K;
-    for (int i = 1; i <= N; i++) {
-        for (int j = 1; j <= N; j++) {
+
+    for(int i=1; i<=N; i++) {
+        for(int j=1; j<=N; j++) {
             int cur;
             cin >> cur;
-            board[i][j] = cur;
 
-            if (cur >= 2)
-                aircon.push_back({ i, j, cur - 2 });
+            if(cur == 1) office.push_back({i, j});
+            else if(cur >= 2)
+                aircon.push_back({i, j, cur - 2});
+            
+            A[i][j] = 0;
         }
     }
 
-    for (int x, y, s; M--;) {
+    for(int x, y, s; M--;) {
         cin >> x >> y >> s;
 
-        if (s == 0) {
+        if(s == 0) {
             wall[x][y][1] = true;
-            wall[x - 1][y][3] = true;
+            wall[x-1][y][3] = true;
         }
-        if (s == 1) {
+        else {
             wall[x][y][0] = true;
-            wall[x][y - 1][2] = true;
+            wall[x][y-1][2] = true;
         }
     }
 
-    int cnt = 0, ans = -1;
-    while (cnt++ <= 100) {
-        for (auto& nxt : aircon) {
-            int dir = nxt.dir;
-            int nx = nxt.x + dx[dir];
-            int ny = nxt.y + dy[dir];
-
-            Spread(nx, ny, dir);
-        }
+    int k = 0, ans = -1;
+    while(k++ <= 100) {
+        Cooling();
         Mix();
         Decrease();
-
-        if (Calc()) {
-            ans = cnt;
+        if(Satisfied()) {
+            ans = k;
             break;
         }
     }
