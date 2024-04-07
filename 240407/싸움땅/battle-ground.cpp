@@ -1,12 +1,7 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
-#define X first
-#define Y second
 using namespace std;
-using pii = pair<int, int>;
 
 const int SZ = 25;
-// ↑, →, ↓, ←
 const int dx[] = { -1,0,1,0 };
 const int dy[] = { 0,1,0,-1 };
 int N, M, K;
@@ -20,8 +15,6 @@ vector<Info> player;
 void Input() {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
-
-	// freopen("input.txt", "r", stdin);
 
 	cin >> N >> M >> K;
 
@@ -51,10 +44,9 @@ void GetGun(int idx, int x, int y) {
 	Info& cur = player[idx];
 	if (cur.gun > 0) board[x][y].push_back(cur.gun);
 
-	sort(board[x][y].begin(), board[x][y].end());
-
-	cur.gun = board[x][y].back();
-	board[x][y].pop_back();
+	int mx = max_element(board[x][y].begin(), board[x][y].end()) - board[x][y].begin();
+	cur.gun = board[x][y][mx];
+	board[x][y].erase(board[x][y].begin() + mx);
 }
 
 void MoveLosser(int idx, int x, int y) {
@@ -143,7 +135,6 @@ void MovePlayer() {
 		cur.x = nx;
 		cur.y = ny;
 
-		// fight
 		if (pos[nx][ny] > 0)
 			Fight(i, pos[nx][ny], nx, ny);
 
