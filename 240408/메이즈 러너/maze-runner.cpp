@@ -113,12 +113,9 @@ void RotateExit(int sx, int sy, int size) {
 	int x = ext.first;
 	int y = ext.second;
 	if (sx <= x && x < sx + size && sy <= y && y < sy + size) {
-		// Step 1. (sx, sy)를 (0, 0)으로 옮겨주는 변환을 진행합니다. 
 		int ox = x - sx, oy = y - sy;
-		// Step 2. 변환된 상태에서는 회전 이후의 좌표가 (x, y) -> (y, square_n - x - 1)가 됩니다.
 		int rx = oy, ry = size - ox - 1;
-		// Step 3. 다시 (sx, sy)를 더해줍니다.
-		ext = make_pair(rx + sx, ry + sy);
+		ext = { rx + sx, ry + sy };
 	}
 }
 
@@ -168,8 +165,9 @@ int main(void) {
 	cin >> ext.X >> ext.Y;
 	ext.X--, ext.Y--;
 
-	while (K-- && Run()) {
+	while (K--) {
 		MovePlayer();
+		if (!Run()) break;
 		Rotate();
 	}
 
