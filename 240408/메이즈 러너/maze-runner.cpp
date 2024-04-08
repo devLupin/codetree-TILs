@@ -56,19 +56,19 @@ void MovePlayer() {
 }
 
 tuple<int, int, int> GetSquare() {
-	for (int size = 2; size <= N; size++) {
-		for (int x1 = 0; x1 <= N - size - 1; x1++) {
-			for (int y1 = 0; y1 <= N - size - 1; y1++) {
-				int x2 = x1 + size - 1;
-				int y2 = y1 + size - 1;
+	for (int sz = 2; sz <= N; sz++) {
+		for (int x1 = 0; x1 <= N - sz + 1; x1++) {
+			for (int y1 = 0; y1 <= N - sz + 1; y1++) {
+				int x2 = x1 + sz - 1;
+				int y2 = y1 + sz - 1;
 
 				if (ext.X >= x1 && ext.Y >= y1 && ext.X <= x2 && ext.Y <= y2) {
-					for (int p = 1; p <= M; p++) {
-						if (is_escape[p]) continue;
+					for (int i = 1; i <= M; i++) {
+						if (is_escape[i]) continue;
 
-						auto& nxt = player[p];
+						auto nxt = player[i];
 						if (nxt.X >= x1 && nxt.Y >= y1 && nxt.X <= x2 && nxt.Y <= y2)
-							return make_tuple(x1, y1, size);
+							return make_tuple(x1, y1, sz);
 					}
 				}
 			}
@@ -89,34 +89,37 @@ void RotateMaze(int sx, int sy, int size) {
 		}
 	}
 
-	for (int x = sx; x < sx + size; x++) {
-		for (int y = sy; y < sy + size; y++) {
+	for (int x = sx; x < sx + size; x++)
+		for (int y = sy; y < sy + size; y++)
 			maze[x][y] = next_maze[x][y];
-			next_maze[x][y] = 0;
-		}
-	}
 }
 
 void RotatePlayer(int x1, int y1, int size) {
 	for (int i = 1; i <= M; i++) {
 		if (is_escape[i]) continue;
 
-		auto& nxt = player[i];
-		int x2 = x1 + size - 1;
-		int y2 = y1 + size - 1;
+		int x = player[i].first;
+		int y = player[i].second;
 
-		if (nxt.X >= x1 && nxt.Y >= y1 && nxt.X <= x2 && nxt.Y <= y2) {
-			int ox = nxt.X - x1, oy = nxt.Y - y1;
+		if (x1 <= x && x < x1 + size && y1 <= y && y < y1 + size) {
+			int ox = x - x1, oy = y - y1;
 			int rx = oy, ry = size - ox - 1;
-			nxt = { rx + x1, ry + y1 };
+			player[i] = { rx + x1, ry + y1 };
 		}
 	}
 }
 
 void RotateExit(int sx, int sy, int size) {
-	int ox = ext.X - sx, oy = ext.Y - sy;
-	int rx = oy, ry = size - ox - 1;
-	ext = { rx + sx, ry + sy };
+	int x = ext.first;
+	int y = ext.second;
+	if (sx <= x && x < sx + size && sy <= y && y < sy + size) {
+		// Step 1. (sx, sy)를 (0, 0)으로 옮겨주는 변환을 진행합니다. 
+		int ox = x - sx, oy = y - sy;
+		// Step 2. 변환된 상태에서는 회전 이후의 좌표가 (x, y) -> (y, square_n - x - 1)가 됩니다.
+		int rx = oy, ry = size - ox - 1;
+		// Step 3. 다시 (sx, sy)를 더해줍니다.
+		ext = make_pair(rx + sx, ry + sy);
+	}
 }
 
 void Rotate() {
@@ -131,6 +134,17 @@ bool Run() {
 	for (int i = 1; i <= M; i++)
 		if (!is_escape[i]) return true;
 	return false;
+}
+
+void Print() {
+	cout << '\n';
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++)
+			cout << maze[i][j] << ' ';
+		cout << '\n';
+	}
+	for (auto nxt : player) cout << nxt.X << ' ' << nxt.Y << '\n';
+	cout << ext.X << ' ' << ext.Y << '\n';
 }
 
 int main(void) {
