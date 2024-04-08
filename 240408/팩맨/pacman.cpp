@@ -13,152 +13,134 @@ const int ddy[] = { 0,-1,0,1 };
 const int MAX_T = 30;
 const int MAX_N = 4;
 const int DIR_NUM = 8;
+const int DECAY = 2;
 
-int M, T, cur_t;
-pii packman;
-int monster[MAX_T + 1][MAX_N][MAX_N][DIR_NUM];
-int dead[MAX_N][MAX_N][3];
-
-vector<int> routes;
-int cmp;
-
-void CopyMonster() {
-	for (int i = 0; i < MAX_N; i++)
-		for (int j = 0; j < MAX_N; j++)
-			for (int k = 0; k < DIR_NUM; k++)
-				monster[cur_t][i][j][k] += monster[cur_t - 1][i][j][k];
-}
+int M, T, cur_t = 1;
+int px, py;
+int mst[MAX_T + 1][MAX_N][MAX_N][DIR_NUM];
+int dead[MAX_N][MAX_N][DECAY + 1];
 
 bool OOM(int x, int y) { return x < 0 || y < 0 || x >= MAX_N || y >= MAX_N; }
 
-void MoveMonster() {
-	for (int i = 0; i < MAX_N; i++) {
-		for (int j = 0; j < MAX_N; j++) {
+bool CanGo(int x, int y) {
+	if (OOM(x, y)) return false;
+	if (x == px && y == py) return false;
+	if (dead[x][y][0] || dead[x][y][1]) return false;
+	return true;
+}
+
+void MoveM() {
+	for (int x = 0; x < MAX_N; x++) {
+		for (int y = 0; y < MAX_N; y++) {
 			for (int k = 0; k < DIR_NUM; k++) {
-				if (monster[cur_t - 1][i][j][k] > 0) {
-					int nx = i + dx[k];
-					int ny = j + dy[k];
+				if (mst[cur_t - 1][x][y][k] > 0) {
+					tuple<int, int, int> n_pos;
+					bool flag = false;
 
-					if (OOM(nx, ny) || (nx == packman.X && ny == packman.Y) || dead[nx][ny][1] || dead[nx][ny][2]) {
-						int dir = k;
+					for (int i = 0; i < DIR_NUM; i++) {
+						int dir = (k + i + DIR_NUM) % DIR_NUM;
+						int nx = x + dx[dir];
+						int ny = y + dy[dir];
 
-						for (int l = 0; l < 7; l++) {
-							dir = (dir + 1) % DIR_NUM;
-							nx = i + dx[dir];
-							ny = j + dy[dir];
-
-							if (!OOM(nx, ny) && !(nx == packman.X && ny == packman.Y) && !dead[nx][ny][0] && !dead[nx][ny][1]) {
-								monster[cur_t][nx][ny][dir] += monster[cur_t - 1][i][j][k];
-								break;
-							}
+						if (CanGo(nx, ny)) {
+							n_pos = make_tuple(nx, ny, dir);
+							flag = true;
+							break;
 						}
 					}
-					else 
-						monster[cur_t][nx][ny][k] += monster[cur_t - 1][i][j][k];
+					if (!flag) n_pos = make_tuple(x, y, k);
+
+					auto [nx, ny, nd] = n_pos;
+					mst[cur_t][nx][ny][nd] += mst[cur_t - 1][x][y][k];
 				}
 			}
 		}
 	}
 }
 
-void DFS(int x, int y, int cnt, vector<int> dirs) {
-	if (cnt == 3) {
-		int sum = 0;
-		int nx = packman.X;
-		int ny = packman.Y;
+int GetKilledNum(int d1, int d2, int d3) {
+	auto [x, y] = make_pair(px, py);
+	int ret = 0;
 
-		bool vis[MAX_N][MAX_N] = { false, };
-		vis[nx][ny] = true;
+	bool vis[MAX_N][MAX_N] = { false, };
 
-		for (int dir : dirs) {
-			nx += ddx[dir];
-			ny += ddy[dir];
+	for (int dir : {d1, d2, d3}) {
+		int nx = x + ddx[dir];
+		int ny = y + ddy[dir];
 
-			bool flag = false;
-			for (int k = 0; k < DIR_NUM; k++) {
-				if (vis[nx][ny]) continue;
-
-				if (monster[cur_t][nx][ny][k] > 0) {
-					sum += monster[cur_t][nx][ny][k];
-					flag = true;
-				}
-			}
-
-			if (flag) vis[nx][ny] = true;
+		if (OOM(nx, ny)) return -1;
+		if (!vis[nx][ny]) {
+			for (int k = 0; k < DIR_NUM; k++)
+				ret += mst[cur_t][nx][ny][k];
+			vis[nx][ny] = true;
 		}
 
-		if (cmp < sum) {
-			cmp = sum;
-			routes = dirs;
-		}
-
-		return;
+		tie(x, y) = make_pair(nx, ny);
 	}
 
-	for (int nd = 0; nd < 4; nd++) {
-		int nx = x + ddx[nd];
-		int ny = y + ddy[nd];
-
-		if (!OOM(nx, ny)) {
-			dirs.push_back(nd);
-			DFS(nx, ny, cnt + 1, dirs);
-			dirs.pop_back();
-		}
-	}
+	return ret;
 }
 
-void MovePackman() {
-	cmp = -1;
-	routes.clear();
+void MoveP() {
+	auto [x, y] = make_pair(px, py);
+	vector<int> routes;
+	int cmp = -1;
 
-	DFS(packman.X, packman.Y, 0, {});
-	auto [px, py] = packman;
-
-	// 상좌하우
-	for (int& nd : routes) {
-		px += ddx[nd];
-		py += ddy[nd];
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			for (int k = 0; k < 4; k++) {
+				int cnt = GetKilledNum(i, j, k);
+				if (cmp < cnt) {
+					cmp = cnt;
+					routes = { i, j, k };
+				}
+			}
+		}
+	}
+	
+	for (int dir : routes) {
+		int nx = px + ddx[dir];
+		int ny = py + ddy[dir];
 
 		for (int k = 0; k < DIR_NUM; k++) {
-			dead[px][py][2] += monster[cur_t][px][py][k];
-			monster[cur_t][px][py][k] = 0;
+			dead[nx][ny][DECAY] += mst[cur_t][nx][ny][k];
+			mst[cur_t][nx][ny][k] = 0;
+		}
+
+		tie(px, py) = make_pair(nx, ny);
+	}
+}
+
+void DecayM() {
+	for (int i = 0; i < MAX_N; i++) {
+		for (int j = 0; j < MAX_N; j++) {
+			for (int k = 0; k < DECAY; k++)
+				dead[i][j][k] = dead[i][j][k + 1];
+			dead[i][j][DECAY] = 0;
 		}
 	}
-	packman = { px, py };
 }
 
-void Decay() {
-	for (int i = 0; i < M; i++)
-		for (int j = 0; j < M; j++) {
-			for (int k = 0; k < 2; k++)
-				dead[i][j][k] = dead[i][j][k + 1];
-			dead[i][j][2] = 0;
-		}
-}
-
-int CountMonster() {
-	int cnt = 0;
-
-	for (int i = 0; i < M; i++)
-		for (int j = 0; j < M; j++)
+void AddM() {
+	for (int i = 0; i < 4; i++)
+		for (int j = 0; j < 4; j++)
 			for (int k = 0; k < DIR_NUM; k++)
-				cnt += monster[cur_t][i][j][k];
-
-	return cnt;
+				mst[cur_t][i][j][k] += mst[cur_t - 1][i][j][k];
 }
 
 void Print() {
-	for (int i = 0; i < MAX_N; i++) {
-		for (int j = 0; j < MAX_N; j++) {
+	for (int x = 0; x < MAX_N; x++) {
+		for (int y = 0; y < MAX_N; y++) {
 			int cnt = 0;
-			for (int k = 0; k < DIR_NUM; k++) {
-				if (monster[cur_t][i][j][k] > 0) cnt += monster[cur_t][i][j][k];
-			}
-			if(cnt > 0)
-				cout << i << ' ' << j << ' ' << cnt << '\n';
+
+			for (int k = 0; k < DIR_NUM; k++)
+				if (mst[cur_t][x][y][k] > 0) cnt += mst[cur_t][x][y][k];
+
+			if (cnt > 0) cout << x << ' ' << y << ' ' << cnt << '\n';
 		}
 	}
-	cout << '\n';
+
+	cout << "\n\n";
 }
 
 int main(void) {
@@ -168,24 +150,30 @@ int main(void) {
 	// freopen("input.txt", "r", stdin);
 
 	cin >> M >> T;
-	cin >> packman.X >> packman.Y;
-	packman.X--, packman.Y--;
+	cin >> px >> py;
+	px--, py--;
 
 	for (int x, y, d, i = 0; i < M; i++) {
 		cin >> x >> y >> d;
 		x--, y--, d--;
-		monster[cur_t][x][y][d]++;
+		(mst[0][x][y][d])++;
 	}
 
-	while (T--) {
+	while (cur_t <= T) {
+		MoveM();
+		MoveP();
+		DecayM();
+		AddM();
 		cur_t++;
-
-		MoveMonster();
-		MovePackman();
-		Decay();
-		CopyMonster();
 	}
 
-	cout << CountMonster();
+	int cnt = 0;
+	for (int i = 0; i < MAX_N; i++)
+		for (int j = 0; j < MAX_N; j++)
+			for (int k = 0; k < DIR_NUM; k++)
+				cnt += mst[cur_t - 1][i][j][k];
+
+	cout << cnt;
+
 	return 0;
 }
