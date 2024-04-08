@@ -59,7 +59,7 @@ void Interaction(int start_num, int xdir, int ydir) {
 }
 
 void Crash(int s_num, int xdir, int ydir, int cnt) {
-	stun[s_num] += 2;
+	stun[s_num] = 2;
 
 	if (cnt == 0) return;
 
