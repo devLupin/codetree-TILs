@@ -89,7 +89,7 @@ void RotateMaze(int sx, int sy, int size) {
 		}
 	}
 
-	for (int x = sx; x < sx + size; x++)
+	for (int x = sx; x < sx + size; x++) 
 		for (int y = sy; y < sy + size; y++)
 			maze[x][y] = next_maze[x][y];
 }
