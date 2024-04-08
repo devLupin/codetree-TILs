@@ -38,7 +38,7 @@ void MoveM() {
 					bool flag = false;
 
 					for (int i = 0; i < DIR_NUM; i++) {
-						int dir = (k + i + DIR_NUM) % DIR_NUM;
+						int dir = (k + i) % DIR_NUM;
 						int nx = x + dx[dir];
 						int ny = y + dy[dir];
 
@@ -126,21 +126,6 @@ void AddM() {
 		for (int j = 0; j < 4; j++)
 			for (int k = 0; k < DIR_NUM; k++)
 				mst[cur_t][i][j][k] += mst[cur_t - 1][i][j][k];
-}
-
-void Print() {
-	for (int x = 0; x < MAX_N; x++) {
-		for (int y = 0; y < MAX_N; y++) {
-			int cnt = 0;
-
-			for (int k = 0; k < DIR_NUM; k++)
-				if (mst[cur_t][x][y][k] > 0) cnt += mst[cur_t][x][y][k];
-
-			if (cnt > 0) cout << x << ' ' << y << ' ' << cnt << '\n';
-		}
-	}
-
-	cout << "\n\n";
 }
 
 int main(void) {
