@@ -61,6 +61,8 @@ void Interaction(int start_num, int xdir, int ydir) {
 void Crash(int s_num, int xdir, int ydir, int cnt) {
 	stun[s_num] += 2;
 
+	if (cnt == 0) return;
+
 	auto [sx, sy] = pos[s_num];
 	sx += xdir * cnt;
 	sy += ydir * cnt;
@@ -151,12 +153,20 @@ void MoveS() {
 	}
 }
 
-void Update() {
+bool Update() {
+	bool ret = false;
+
 	for (int i = 1; i <= P; i++)
 		if (stun[i] > 0) stun[i]--;
 
-	for (int i = 1; i <= P; i++)
-		if (!die[i]) ans[i]++;
+	for (int i = 1; i <= P; i++) {
+		if (!die[i]) {
+			ans[i]++;
+			ret = true;
+		}
+	}
+
+	return ret;
 }
 
 void Print() {
@@ -191,7 +201,7 @@ int main(void) {
 	while (M--) {
 		MoveR();
 		MoveS();
-		Update();
+		if (!Update()) break;
 	}
 
 	for (int i = 1; i <= P; i++)
