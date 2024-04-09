@@ -122,6 +122,8 @@ void Fill() {
 	v = RemoveDup(v);
 	v = Pairing(v);
 
+	fill(&board[0][0], &board[N][N], 0);
+
 	int len = min(N * N - 1, (int)v.size());
 
 	auto [x, y] = make_pair(sx, sy);
