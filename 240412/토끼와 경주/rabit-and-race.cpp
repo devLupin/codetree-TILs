@@ -9,8 +9,8 @@ using LL = long long;
 const int MAX_P = 2000;
 const int DIR_NUM = 4;
 
-const int dx[DIR_NUM] = { -1,0,1,0 };
-const int dy[DIR_NUM] = { 0,-1,0,1 };
+const int dx[DIR_NUM] = { -1,1,0,0 };
+const int dy[DIR_NUM] = { 0,0,-1,1 };
 
 int Q, N, M, P, K, S;
 
@@ -52,22 +52,22 @@ void Init() {
 
 Rabbit Move(Rabbit cur, int dir, int idx) {
 	auto [x, y] = pos[idx];
-	int cnt = pw[idx];
+	int d = pw[idx];
 
-	while (cnt--) {
-		int nx = x + dx[dir];
-		int ny = y + dy[dir];
+	x--, y--;
 
-		if (OOM(nx, ny)) {
-			dir = (dir + 2) % 4;
-			nx = x + dx[dir];
-			ny = y + dy[dir];
-		}
+	if (dir == 0) x = (x + d) % (2 * (N - 1));
+	else if (dir == 1) x = (x - d) % (2 * (N - 1));
 
-		tie(x, y) = make_pair(nx, ny);
-	}
+	if (x >= N) x = (2 * (N - 1)) - x;
 
-	return Rabbit(x, y, id[idx], jump_cnt[idx]);
+
+	if (dir == 2) y = (y + d) % (2 * (M - 1));
+	else if (dir == 3) y = (y - d) % (2 * (M - 1));
+
+	if (y >= M) y = 2 * (M - 1) - y;
+
+	return Rabbit(x + 1, y + 1, id[idx], jump_cnt[idx]);
 }
 
 bool Compare(const Rabbit& a, const Rabbit& b) {
@@ -78,7 +78,7 @@ bool Compare(const Rabbit& a, const Rabbit& b) {
 
 void Run() {
 	priority_queue<Rabbit> pq;
-	Rabbit lst();
+	Rabbit lst(0, 0, 0, 0);
 	bool vis[MAX_P] = { false, };
 
 	cin >> K >> S;
