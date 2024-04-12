@@ -14,138 +14,155 @@ const int dy[DIR_NUM] = { 0,0,-1,1 };
 
 int Q, N, M, P, K, S;
 
-pii pos[MAX_P];
-int id[MAX_P];
-unordered_map<int, int> id2idx;
-int jump_cnt[MAX_P];
-int pw[MAX_P];
-
-LL score[MAX_P];
-
 struct Rabbit {
-	int x, y, pid, jcnt;
+	int x, y;
+	int pid;
+	int d;
+	int jump_count;
 
-	Rabbit(int x, int y, int pid, int jcnt) 
-		: x(x), y(y), pid(pid), jcnt(jcnt) {}
-
-	bool operator<(const Rabbit& tmp) const {
-		if (jcnt != tmp.jcnt) return jcnt > tmp.jcnt;
-		if ((x + y) != (tmp.x + tmp.y)) return (x + y) > (tmp.x + tmp.y);
-		if (x != tmp.x) return x > tmp.x;
-		if (y != tmp.y) return y > tmp.y;
-		return pid > tmp.pid;
+	bool operator<(const Rabbit& cmp) const {
+		if (jump_count != cmp.jump_count) return jump_count > cmp.jump_count;
+		if (x + y != cmp.x + cmp.y) return x + y > cmp.x + cmp.y;
+		if (x != cmp.x) return x > cmp.x;
+		return y > cmp.y;
 	}
 };
 
+unordered_map<int, Rabbit> rabbits; // (토끼 id, 토끼)
+unordered_map<int, LL> score; // (토끼 id, 점수)
 
-bool OOM(int x, int y) { return x < 1 || y < 1 || x > N || y > M; }
+bool OOM(int x, int y) { return x < 0 || y < 0 || x >= N || y >= M; }
 
 void Init() {
 	cin >> N >> M >> P;
 
-	for (int i = 0; i < P; i++) {
-		cin >> id[i] >> pw[i];
-		id2idx[id[i]] = i;
-		pos[i] = { 1,1 };
+	for (int pid, d, i = 0; i < P; i++) {
+		cin >> pid >> d;
+		rabbits[pid] = { 0,0,pid,d,0 };
+		score[pid] = 0;
 	}
 }
 
-Rabbit Move(Rabbit cur, int dir, int idx) {
-	auto [x, y] = pos[idx];
-	int d = pw[idx];
-
-	x--, y--;
-
-	if (dir == 0) x = (x + d) % (2 * (N - 1));
-	else if (dir == 1) x = (x - d) % (2 * (N - 1));
-
-	if (x >= N) x = (2 * (N - 1)) - x;
-
-
-	if (dir == 2) y = (y + d) % (2 * (M - 1));
-	else if (dir == 3) y = (y - d) % (2 * (M - 1));
-
-	if (y >= M) y = 2 * (M - 1) - y;
-
-	return Rabbit(x + 1, y + 1, id[idx], jump_cnt[idx]);
+pii right(int x, int y, int d) {
+	int dist = d % (2 * (M - 1));
+	if (M - y - 1 < dist) {
+		dist -= M - y - 1;
+		if (M - 1 < dist) {
+			dist -= M - 1;
+			y = dist;
+		}
+		else y = M - 1 - dist;
+	}
+	else y += dist;
+	return { x,y };
 }
 
-bool Compare(const Rabbit& a, const Rabbit& b) {
-	if (a.x + a.y != b.x + b.y) return a.x + a.y < b.x + b.y;
-	if (a.x != b.x) return a.x < b.x;
-	return a.y < b.y;
+pii left(int x, int y, int d) {
+	int dist = d % (2 * (M - 1));
+	if (y < dist) {
+		dist -= y;
+		if (M - 1 < dist) {
+			dist -= M - 1;
+			y = M - 1 - dist;
+		}
+		else y = dist;
+	}
+	else y -= dist;
+	return { x,y };
+}
+
+pii up(int x, int y, int d) {
+	int dist = d % (2 * (N - 1));
+	if (x < dist) {
+		dist -= x;
+		if (N - 1 < dist) {
+			dist -= N - 1;
+			x = N - 1 - dist;
+		}
+		else x = dist;
+	}
+	else x -= dist;
+	return { x,y };
+}
+
+pii down(int x, int y, int d) {
+	int dist = d % (2 * (N - 1));
+	if (N - x - 1 < dist) {
+		dist -= N - x - 1;
+		if (N - 1 < dist) {
+			dist -= N - 1;
+			x = dist;
+		}
+		else x = N - 1 - dist;
+	}
+	else x += dist;
+	return { x,y };
+}
+
+bool Compare(const pii& a, const pii& b) {
+	if (a.X + a.Y != b.X + b.Y) return a.X + a.Y < b.X + b.Y;
+	if (a.X != b.X) return a.X < b.X;
+	return a.Y < b.Y;
 }
 
 void Run() {
-	priority_queue<Rabbit> pq;
-	Rabbit lst(0, 0, 0, 0);
-	bool vis[MAX_P] = { false, };
-
 	cin >> K >> S;
 
-	for (int i = 0; i < P; i++) {
-		Rabbit new_rabbit = Rabbit(pos[i].X, pos[i].Y, id[i], jump_cnt[i]);
-		pq.push(new_rabbit);
-	}
+	priority_queue<Rabbit> pq;
+	set<int> vis;
+	int best;
 
+	for (auto& nxt : rabbits)
+		pq.push(nxt.second);
+	
 	while (K--) {
-		Rabbit cur = pq.top();
+		pii pos, npos;
+		auto [x, y, pid, dist, jump_count] = pq.top();
 		pq.pop();
 
-		Rabbit nxt = Rabbit(1, 1, cur.pid, cur.jcnt);
-		int idx = id2idx[cur.pid];
+		vis.insert(pid);
 
-		for (int dir = 0; dir < DIR_NUM; dir++) {
-			Rabbit cmp = Move(cur, dir, idx);
-			if (Compare(nxt, cmp)) nxt = cmp;
-		}
+		pos = left(x, y, dist);
 
-		for (int i = 0; i < P; i++)
-			score[i] += (nxt.x + nxt.y);
-		score[idx] -= (nxt.x + nxt.y);
+		npos = right(x, y, dist);
+		if (Compare(pos, npos)) pos = npos;
 
-		nxt.jcnt++;
-		pq.push(nxt);
-		vis[idx] = true;
+		npos = up(x, y, dist);
+		if (Compare(pos, npos)) pos = npos;
 
-		pos[idx] = { nxt.x, nxt.y };
-		jump_cnt[idx]++;
+		npos = down(x, y, dist);
+		if (Compare(pos, npos)) pos = npos;
+
+
+		for (auto& it : score)
+			if (it.first != pid) it.second += pos.X + pos.Y + 2;
+
+		rabbits[pid].x = pos.X;
+		rabbits[pid].y = pos.Y;
+		rabbits[pid].jump_count++;
+
+		best = pid;
+		pq.push(rabbits[pid]);
 	}
 
-	int idx = -1;
-	Rabbit cmp = Rabbit(0, 0, -1, -1);
+	for (auto& nxt : vis)
+		if (Compare({rabbits[best].x, rabbits[best].y}, {rabbits[nxt].x, rabbits[nxt].y})) best = nxt;
 
-	while (!pq.empty()) {
-		Rabbit cur = pq.top();
-		int c_idx = id2idx[cur.pid];
-		pq.pop();
-
-		if (Compare(cmp, cur) && vis[c_idx]) {
-			cmp = cur;
-			idx = c_idx;
-		}
-	}
-
-	score[idx] += S;
+	score[best] += S;
 }
 
 void Adjust() {
-	int pid_t, L;
-	cin >> pid_t >> L;
-	
-	pw[id2idx[pid_t]] *= L;
+	int pid, L;
+	cin >> pid >> L;
+	rabbits[pid].d *= L;
 }
 
 void Answer() {
-	cout << *max_element(score, score + P) << '\n';
+	LL mx = 0;
+	for (auto nxt : score)
+		mx = max(mx, nxt.second);
+	cout << mx;
 }
-
-struct cur {
-	int x;
-	bool operator<(const cur& nxt)const {
-		return x < nxt.x;
-	}
-};
 
 int main(void) {
 	ios::sync_with_stdio(false);
