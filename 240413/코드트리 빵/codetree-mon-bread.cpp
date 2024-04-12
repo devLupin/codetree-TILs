@@ -83,7 +83,7 @@ void Move(int t) {
 			x += dx[ndir];
 			y += dy[ndir];
 
-			if (board[x][y] == CONV) {
+			if (make_pair(x, y) == conv[i]) {
 				arrived[i] = true;
 				check[x][y] = true;
 			}
@@ -156,7 +156,7 @@ int main(void) {
 	cidx--;
 
 	int t = 1;
-	while (true) {
+	while (t <= 7) {
 		Move(t);
 		Enter(t);
 		if (!Go()) break;
