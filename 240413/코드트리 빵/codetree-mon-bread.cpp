@@ -156,7 +156,7 @@ int main(void) {
 	cidx--;
 
 	int t = 1;
-	while (t <= 7) {
+	while (true) {
 		Move(t);
 		Enter(t);
 		if (!Go()) break;
