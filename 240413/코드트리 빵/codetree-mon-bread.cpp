@@ -26,7 +26,7 @@ int bidx, cidx, pidx;
 int board[SZ][SZ];
 bool check[SZ][SZ];
 bool arrived[MAX_M];
-pii base[MAX_M], conv[MAX_M], person[MAX_M];
+pii base[SZ * SZ], conv[MAX_M], person[MAX_M];
 
 bool OOM(int x, int y) { return x < 1 || y <1 || x > N || y > N; }
 
