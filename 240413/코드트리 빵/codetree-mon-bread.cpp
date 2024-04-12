@@ -59,6 +59,8 @@ int BFS(pii src, pii dst) {
 
 void Move(int t) {
 	int len = min(t, pidx);
+	vector<int> ndirs(len + 1, 0);
+
 	for (int i = 1; i <= len; i++) {
 		if (arrived[i]) continue;
 
@@ -80,13 +82,22 @@ void Move(int t) {
 		}
 
 		if (cmp != INF) {
-			x += dx[ndir];
-			y += dy[ndir];
+			ndirs[i] = ndir;
+		}
+	}
 
-			if (make_pair(x, y) == conv[i]) {
-				arrived[i] = true;
-				check[x][y] = true;
-			}
+	for (int i = 1; i <= len; i++) {
+		if (arrived[i]) continue;
+
+		int ndir = ndirs[i];
+		auto& [x, y] = person[i];
+
+		x += dx[ndir];
+		y += dy[ndir];
+
+		if (make_pair(x, y) == conv[i]) {
+			arrived[i] = true;
+			check[x][y] = true;
 		}
 	}
 }
