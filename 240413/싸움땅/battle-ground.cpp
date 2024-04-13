@@ -55,9 +55,9 @@ void MoveLosser(int idx) {
         int ny = y + dy[dir];
 
         if (!OOM(nx, ny) && num[nx][ny] == 0) {
-            swap(num[x][y], num[nx][ny]);
             x = nx, y = ny;
             d = dir;
+            num[x][y] = idx;
             break;
         }
     }
@@ -139,6 +139,6 @@ int main() {
 
     while (K--) MoveP();
 
-    for(int i=1; i<=M; i++) cout << score[i] << ' ';
+    for (int i = 1; i <= M; i++) cout << score[i] << ' ';
     return 0;
 }
