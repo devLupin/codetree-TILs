@@ -188,6 +188,7 @@ int main(void) {
 
 	int ans = 0;
 	for (int k = 1; k <= K; k++) {
+		if (turlets.size() < 2) break;
 		Attacker(k);
 		Attack();
 		ans = Maintain();
