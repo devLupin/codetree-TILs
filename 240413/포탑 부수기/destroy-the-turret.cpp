@@ -10,6 +10,7 @@ using LL = long long;
 const int SZ = 15;
 const int INF = 0x3f3f3f;
 
+// 우/하/좌/상
 const int dx[] = { 0,1,0,-1,-1,-1,1,1 };
 const int dy[] = { 1,0,-1,0,-1,1,1,-1 };
 
@@ -39,23 +40,24 @@ void Attacker(int k) {
 
 bool OOM(int x, int y) { return x < 0 || y < 0 || x >= N || y >= M; }
 
+// 우/하/좌/상
 tiii Adjust(int x, int y, int dir) {
 	if (OOM(x, y)) {
 		if (x < 0) {
 			x = N - 1;
-			dir = 0;
+			dir = 3;
 		}
 		else if (y < 0) {
 			y = M - 1;
-			dir = 1;
+			dir = 2;
 		}
 		else if (x >= N) {
 			x = 0;
-			dir = 2;
+			dir = 1;
 		}
 		else if (y >= M) {
 			y = 0;
-			dir = 3;
+			dir = 0;
 		}
 	}
 
@@ -168,16 +170,6 @@ int Maintain() {
 	next_turlets.clear();
 
 	return ret;
-}
-
-void Print() {
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < M; j++) {
-			cout << board[i][j] << ' ';
-		}
-		cout << '\n';
-	}
-	cout << "\n\n";
 }
 
 int main(void) {
