@@ -83,16 +83,20 @@ void q400() {
 	vector<pair<int, Info>> v(product.begin(), product.end());
 	sort(v.begin(), v.end(), cmp);
 
-	int id = v[0].first;
-	Info info = v[0].second;
+	if (v.empty())
+		cout << -1 << '\n';
 
-	if (info.dest != INF && info.dist <= info.revenue) {
-		q300(id);
-		cout << id << '\n';
-		return;
+	else {
+		int id = v[0].first;
+		Info info = v[0].second;
+
+		if (info.dest != INF && info.dist <= info.revenue) {
+			q300(id);
+			cout << id << '\n';
+		}
+		else
+			cout << -1 << '\n';
 	}
-	
-	cout << -1 << '\n';
 }
 
 void q500() {
