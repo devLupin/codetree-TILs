@@ -12,12 +12,19 @@ const int INF = 987654321;
 const int SZ = 2000;
 
 struct Info {
-	int revenue, dest, dist;
+	int id, revenue, dest, dist;
+
+	bool operator<(const Info& tmp) const {
+		int v1 = revenue - dist;
+		int v2 = tmp.revenue - tmp.dist;
+
+		if (v1 != v2) return v1 < v2;
+		return id > tmp.id;
+	}
 };
 
-unordered_map<int, Info> product;
+priority_queue<Info> que;
 unordered_map<int, int> pid;
-
 int Q, N, M;
 vector<pii> adj[SZ];
 vector<int> cost_id;
@@ -63,31 +70,22 @@ void q200() {
 	int id, revenue, dest;
 	cin >> id >> revenue >> dest;
 	
-	product[id] = { revenue, dest, cost_id[dest] };
+	que.push({ id, revenue, dest, cost_id[dest] });
 	pid[id]++;
 }
 
 void q300(int id) { if (pid[id] > 0) pid[id]--; }
 
-bool cmp(const pair<int, Info>& a, const pair<int, Info>& b) {
-	int v1 = a.second.revenue - a.second.dist;
-	int v2 = b.second.revenue - b.second.dist;
-
-	if (v1 != v2) return v1 > v2;
-	return a.first < b.first;
-}
-
 void q400() {
-	vector<pair<int, Info>> v(product.begin(), product.end());
-	sort(v.begin(), v.end(), cmp);
+	while (!que.empty()) {
+		Info cur = que.top();
+		
+		if (cur.revenue - cur.dist < 0) break;
+		que.pop();
 
-	for (auto& nxt : v) {
-		Info info = nxt.second;
-		int id = nxt.first;
-
-		if (pid[id] > 0 && info.dest != INF && info.dist <= info.revenue) {
-			q300(id);
-			cout << id << '\n';
+		if (pid[cur.id] > 0) {
+			q300(cur.id);
+			cout << cur.id << '\n';
 			return;
 		}
 	}
@@ -96,12 +94,20 @@ void q400() {
 }
 
 void q500() {
+	vector<Info> tmp;
 	int s;
 	cin >> s;
 	dijkstra(s);
 
-	for (auto& item : product)
-		item.second.dist = cost_id[item.second.dest];
+	while (!que.empty()) {
+		tmp.push_back(que.top());
+		que.pop();
+	}
+
+	for (Info nxt : tmp) {
+		nxt.dist = cost_id[nxt.dest];
+		que.push(nxt);
+	}
 }
 
 int main(void) {
