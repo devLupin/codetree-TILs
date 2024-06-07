@@ -16,6 +16,7 @@ struct Info {
 };
 
 unordered_map<int, Info> product;
+unordered_map<int, int> pid;
 
 int Q, N, M;
 vector<pii> adj[SZ];
@@ -63,13 +64,10 @@ void q200() {
 	cin >> id >> revenue >> dest;
 	
 	product[id] = { revenue, dest, cost_id[dest] };
+	pid[id]++;
 }
 
-void q300(int id) {
-	auto it = product.find(id);
-	if (it != product.end())
-		product.erase(it);
-}
+void q300(int id) { if (pid[id] > 0) pid[id]--; }
 
 bool cmp(const pair<int, Info>& a, const pair<int, Info>& b) {
 	int v1 = a.second.revenue - a.second.dist;
@@ -83,20 +81,18 @@ void q400() {
 	vector<pair<int, Info>> v(product.begin(), product.end());
 	sort(v.begin(), v.end(), cmp);
 
-	if (v.empty())
-		cout << -1 << '\n';
+	for (auto& nxt : v) {
+		Info info = nxt.second;
+		int id = nxt.first;
 
-	else {
-		int id = v[0].first;
-		Info info = v[0].second;
-
-		if (info.dest != INF && info.dist <= info.revenue) {
+		if (pid[id] > 0 && info.dest != INF && info.dist <= info.revenue) {
 			q300(id);
 			cout << id << '\n';
+			return;
 		}
-		else
-			cout << -1 << '\n';
 	}
+
+	cout << -1 << '\n';
 }
 
 void q500() {
