@@ -15,12 +15,11 @@ struct Info {
 	int revenue, dest, dist;
 };
 
-unordered_map<int, int> start;
 unordered_map<int, Info> product;
 
 int Q, N, M;
 vector<pii> adj[SZ];
-vector<vector<int>> all_dist;
+vector<int> cost_id;
 
 void dijkstra(int st) {
 	vector<int> dist(N, INF);
@@ -47,7 +46,7 @@ void dijkstra(int st) {
 		}
 	}
 
-	all_dist[st] = dist;
+	cost_id = dist;
 }
 
 void q100() {
@@ -57,26 +56,19 @@ void q100() {
 		adj[u].push_back({ v, w });
 		adj[v].push_back({ u, w });
 	}
-
-	all_dist.assign(N, {});
 }
 
 void q200() {
 	int id, revenue, dest;
 	cin >> id >> revenue >> dest;
 	
-	start[id] = 0;
-	product[id] = { revenue, dest, all_dist[start[id]][dest] };
+	product[id] = { revenue, dest, cost_id[dest] };
 }
 
 void q300(int id) {
 	auto it = product.find(id);
 	if (it != product.end())
 		product.erase(it);
-
-	auto itt = start.find(id);
-	if (itt != start.end())
-		start.erase(itt);
 }
 
 bool cmp(const pair<int, Info>& a, const pair<int, Info>& b) {
@@ -110,11 +102,8 @@ void q500() {
 	cin >> s;
 	dijkstra(s);
 
-	for (auto& item : start)
-		item.second = s;
-
 	for (auto& item : product)
-		item.second.dist = all_dist[s][item.second.dest];
+		item.second.dist = cost_id[item.second.dest];
 }
 
 int main(void) {
