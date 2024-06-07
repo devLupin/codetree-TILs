@@ -83,15 +83,13 @@ void q400() {
 	vector<pair<int, Info>> v(product.begin(), product.end());
 	sort(v.begin(), v.end(), cmp);
 
-	for (auto& nxt : v) {
-		Info info = nxt.second;
-		int id = nxt.first;
+	int id = v[0].first;
+	Info info = v[0].second;
 
-		if (info.dest != INF && info.dist <= info.revenue) {
-			q300(id);
-			cout << id << '\n';
-			return;
-		}
+	if (info.dest != INF && info.dist <= info.revenue) {
+		q300(id);
+		cout << id << '\n';
+		return;
 	}
 	
 	cout << -1 << '\n';
