@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
+#include <vector>
 #include <stack>
 #include <algorithm>
 #define X first
@@ -47,6 +48,8 @@ void crash(int num, int s, int ddx, int ddy) {
 	pii santa = spos[num];
 	int nx = santa.X + ddx * s;
 	int ny = santa.Y + ddy * s;
+
+	if (ddx * s == 0 && ddy * s == 0) return;
 
 	if (board[nx][ny] > 0) {
 		stack<pii> st;
@@ -143,16 +146,19 @@ void move_santa() {
 	}
 }
 
-bool done() {
-	bool chk = false;
+void done() {
 	for (int i = 1; i <= P; i++) {
 		if (!die[i]) {
 			ans[i]++;
 			if (stun[i] > 0) stun[i]--;
-			chk = true;
 		}
 	}
-	return chk;
+}
+
+bool run() {
+	for (int i = 1; i <= P; i++)
+		if (!die[i]) return true;
+	return false;
 }
 
 int main(void) {
@@ -170,10 +176,10 @@ int main(void) {
 
 	board[rx][ry] = -1;
 
-	while (M--) {
+	while (M-- && run()) {
 		move_rudolf();
 		move_santa();
-		if(!done());
+		done();
 	}
 
 	for (int i = 1; i <= P; i++) cout << ans[i] << ' ';
