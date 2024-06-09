@@ -26,22 +26,26 @@ int distance(int x, int y) { return (rx - x) * (rx - x) + (ry - y) * (ry - y); }
 bool oom(int x, int y) { return x < 1 || y < 1 || x > N || y > N; }
 
 void interaction(stack<pii> st, int ddx, int ddy) {
+	auto [x, y] = st.top();
+	int sx = x + ddx * 2;
+	int sy = y + ddy * 2;
+
 	while (!st.empty()) {
 		pii cur = st.top();
 		int num = board[cur.X][cur.Y];
 		st.pop();
 
-		int nx = cur.X + ddx;
-		int ny = cur.Y + ddy;
+		sx -= ddx;
+		sy -= ddy;
 
-		if (oom(nx, ny)) {
+		if (oom(sx, sy)) {
 			board[cur.X][cur.Y] = 0;
 			die[num] = true;
 		}
 
 		else {
-			swap(board[cur.X][cur.Y], board[nx][ny]);
-			spos[num] = { nx, ny };
+			swap(board[cur.X][cur.Y], board[sx][sy]);
+			spos[num] = { sx, sy };
 		}
 	}
 }
@@ -78,6 +82,15 @@ void crash(int num, int s, int ddx, int ddy) {
 	}
 }
 
+bool compare(tiii& a, tiii& b) {
+	auto [d1, x1, y1] = a;
+	auto [d2, x2, y2] = b;
+
+	if (d1 != d2) return d1 < d2;
+	if (x1 != x2) return x1 > x2;
+	return y1 > y2;
+}
+
 void move_rudolf() {
 	vector<tiii> v;
 
@@ -86,27 +99,25 @@ void move_rudolf() {
 
 		auto [sx, sy] = spos[i];
 		int dist = distance(sx, sy);
-		v.push_back(make_tuple(dist, ~sx, ~sy));
+		v.push_back(make_tuple(dist, sx, sy));
 	}
 
-	sort(v.begin(), v.end());
+	sort(v.begin(), v.end(), compare);
 
 	auto [d, sx, sy] = v[0];
-	tie(sx, sy) = make_pair(~sx, ~sy);
 	int snum = board[sx][sy];
 
 	int ddx = (rx < sx) ? 1 : ((rx > sx) ? -1 : 0);
-	int ddy = (ry < sy) ? 1 : ((rx > sy) ? -1 : 0);
-	int nx = rx + ddx;
-	int ny = ry + ddy;
+	int ddy = (ry < sy) ? 1 : ((ry > sy) ? -1 : 0);
+	
+	rx += ddx;
+	ry += ddy;
 
-	if (board[nx][ny] > 0) {
+	if (board[rx][ry] > 0) {
 		crash(snum, C, ddx, ddy);
 		ans[snum] += C;
 		stun[snum] = 2;
 	}
-
-	tie(rx, ry) = make_pair(nx, ny);
 }
 
 void move_santa() {
@@ -160,21 +171,10 @@ bool run() {
 	return false;
 }
 
-void print() {
-	cout << rx << ' ' << ry << '\n';
-	for (int i = 1; i <= N; i++) {
-		for (int j = 1; j <= N; j++)
-			cout << board[i][j] << ' ';
-		cout << '\n';
-	}
-	cout << "\n\n";
-}
-
 int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
 
-	// freopen("input.txt", "r", stdin);
 	cin >> N >> M >> P >> C >> D >> rx >> ry;
 
 	for (int n, r, c, i = 1; i <= P; i++) {
