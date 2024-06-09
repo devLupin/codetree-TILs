@@ -7,6 +7,7 @@
 #define Y second
 using namespace std;
 using pii = pair<int, int>;
+using tiii = tuple<int, int, int>;
 
 const int SANTA_NUM = 35;
 const int MAX_N = 55;
@@ -27,71 +28,75 @@ bool oom(int x, int y) { return x < 1 || y < 1 || x > N || y > N; }
 void interaction(stack<pii> st, int ddx, int ddy) {
 	while (!st.empty()) {
 		pii cur = st.top();
+		int num = board[cur.X][cur.Y];
 		st.pop();
 
-		int snum = board[cur.X][cur.Y];
 		int nx = cur.X + ddx;
 		int ny = cur.Y + ddy;
 
 		if (oom(nx, ny)) {
-			die[snum] = true;
 			board[cur.X][cur.Y] = 0;
+			die[num] = true;
 		}
+
 		else {
 			swap(board[cur.X][cur.Y], board[nx][ny]);
-			spos[snum] = { nx, ny };
+			spos[num] = { nx, ny };
 		}
 	}
 }
 
 void crash(int num, int s, int ddx, int ddy) {
-	pii santa = spos[num];
-	int nx = santa.X + ddx * s;
-	int ny = santa.Y + ddy * s;
+	if (s == 0) return;
 
-	if (ddx * s == 0 && ddy * s == 0) return;
+	auto [x, y] = spos[num];
+	int nx = x + ddx * s;
+	int ny = y + ddy * s;
 
-	if (board[nx][ny] > 0) {
-		stack<pii> st;
-		st.push(spos[num]);
-
-		while (!oom(nx, ny) && board[nx][ny] > 0) {
-			st.push({ nx, ny });
-			nx += ddx;
-			ny += ddy;
-		}
-
-		interaction(st, ddx, ddy);
+	if (oom(nx, ny)) {
+		board[x][y] = 0;
+		die[num] = true;
 	}
+
 	else {
-		if (oom(nx, ny)) {
-			die[num] = true;
-			board[santa.X][santa.Y] = 0;
+		if (board[nx][ny] > 0) {
+			stack<pii> st;
+			st.push({ x, y });
+
+			while (board[nx][ny] > 0) {
+				st.push({ nx, ny });
+				nx += ddx;
+				ny += ddy;
+			}
+
+			interaction(st, ddx, ddy);
 		}
 		else {
-			swap(board[nx][ny], board[santa.X][santa.Y]);
+			swap(board[x][y], board[nx][ny]);
 			spos[num] = { nx, ny };
 		}
 	}
 }
 
 void move_rudolf() {
-	int snum, cmp = MAX_N * MAX_N;
+	vector<tiii> v;
 
-	for (int x = N; x > 0; x--)
-		for (int y = N; y > 0; y--) {
-			if (board[x][y] > 0 && !die[board[x][y]]) {
-				int dist = distance(x, y);
-				if (cmp > dist) {
-					cmp = dist;
-					snum = board[x][y];
-				}
-			}
-		}
+	for (int i = 1; i <= P; i++) {
+		if (die[i]) continue;
 
-	pii santa = spos[snum];
-	int ddx = (rx < santa.X) ? 1 : ((rx == santa.X) ? 0 : -1);
-	int ddy = (ry < santa.Y) ? 1 : ((ry == santa.Y) ? 0 : -1);
+		auto [sx, sy] = spos[i];
+		int dist = distance(sx, sy);
+		v.push_back(make_tuple(dist, ~sx, ~sy));
+	}
+
+	sort(v.begin(), v.end());
+
+	auto [d, sx, sy] = v[0];
+	tie(sx, sy) = make_pair(~sx, ~sy);
+	int snum = board[sx][sy];
+
+	int ddx = (rx < sx) ? 1 : ((rx > sx) ? -1 : 0);
+	int ddy = (ry < sy) ? 1 : ((rx > sy) ? -1 : 0);
 	int nx = rx + ddx;
 	int ny = ry + ddy;
 
@@ -101,45 +106,41 @@ void move_rudolf() {
 		stun[snum] = 2;
 	}
 
-	swap(board[nx][ny], board[rx][ry]);
-	rx += ddx;
-	ry += ddy;
+	tie(rx, ry) = make_pair(nx, ny);
 }
 
 void move_santa() {
 	for (int i = 1; i <= P; i++) {
-		if (stun[i] > 0 || die[i]) continue;
+		if (die[i] || stun[i]) continue;
 
-		pii cur = spos[i];
-		int cmp = distance(cur.X, cur.Y);
+		auto [x, y] = spos[i];
 		int ddir = -1;
+		int cmp = distance(x, y);
 
-		for(int dir=0; dir<4; dir++) {
-			int nx = cur.X + dx[dir];
-			int ny = cur.Y + dy[dir];
+		for (int dir = 0; dir < 4; dir++) {
+			int nx = x + dx[dir];
+			int ny = y + dy[dir];
+			int nd = distance(nx, ny);
 
-			if (oom(nx, ny) || board[nx][ny] > 0) continue;
-
-			int dist = distance(nx, ny);
-			if (cmp > dist) {
-				cmp = dist;
+			if (board[nx][ny] <= 0 && nd < cmp) {
+				cmp = nd;
 				ddir = dir;
 			}
 		}
 
 		if (ddir != -1) {
-			int nx = cur.X + dx[ddir];
-			int ny = cur.Y + dy[ddir];
-			int nd = (ddir + 2) % 4;
+			int nx = x + dx[ddir];
+			int ny = y + dy[ddir];
+			ddir = (ddir + 2) % 4;
 
-			if (board[nx][ny] == -1) {
-				crash(i, D - 1, dx[nd], dy[nd]);
+			if (nx == rx && ny == ry) {
+				crash(i, D - 1, dx[ddir], dy[ddir]);
 				ans[i] += D;
 				stun[i] = 2;
 			}
 
 			else {
-				swap(board[nx][ny], board[cur.X][cur.Y]);
+				swap(board[x][y], board[nx][ny]);
 				spos[i] = { nx, ny };
 			}
 		}
@@ -148,10 +149,8 @@ void move_santa() {
 
 void done() {
 	for (int i = 1; i <= P; i++) {
-		if (!die[i]) {
-			ans[i]++;
-			if (stun[i] > 0) stun[i]--;
-		}
+		if (!die[i]) ans[i]++;
+		if (stun[i] > 0) stun[i]--;
 	}
 }
 
@@ -159,6 +158,16 @@ bool run() {
 	for (int i = 1; i <= P; i++)
 		if (!die[i]) return true;
 	return false;
+}
+
+void print() {
+	cout << rx << ' ' << ry << '\n';
+	for (int i = 1; i <= N; i++) {
+		for (int j = 1; j <= N; j++)
+			cout << board[i][j] << ' ';
+		cout << '\n';
+	}
+	cout << "\n\n";
 }
 
 int main(void) {
@@ -173,8 +182,6 @@ int main(void) {
 		board[r][c] = n;
 		spos[n] = { r, c };
 	}
-
-	board[rx][ry] = -1;
 
 	while (M-- && run()) {
 		move_rudolf();
