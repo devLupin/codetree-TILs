@@ -21,6 +21,15 @@ bool lazer_success;
 struct Info { int p, x, y, t; };
 vector<Info> turlet;
 
+void print() {
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < M; j++)
+			cout << board[i][j] << ' ';
+		cout << '\n';
+	}
+	cout << "\n\n";
+}
+
 bool cmp(const Info& a, const Info& b) {
 	if (board[a.x][a.y] != board[b.x][b.y]) return board[a.x][a.y] < board[b.x][b.y];
 	if (a.t != b.t) return a.t > b.t;
@@ -98,10 +107,10 @@ void attack(int t) {
 	weak.t = t;
 	
 	board[weak.x][weak.y] += N + M;
-	board[strong.x][strong.y] = max(board[strong.x][strong.y] - board[weak.x][weak.y], 0);
 
 	lazer(weak, strong);
 	if (!lazer_success) bomb(weak, strong);
+	board[strong.x][strong.y] = max(board[strong.x][strong.y] - board[weak.x][weak.y], 0);
 
 	for (auto& nxt : turlet)
 		nxt.p = board[nxt.x][nxt.y];
@@ -139,6 +148,7 @@ void init() {
 int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
+	
 	cin >> N >> M >> K;
 
 	for (int i = 0; i < N; i++)
