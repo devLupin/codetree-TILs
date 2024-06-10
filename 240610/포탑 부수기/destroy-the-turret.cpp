@@ -1,43 +1,35 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <iostream>
-#include <tuple>
-#include <vector>
-#include <queue>
-#include <algorithm>
+#include <bits/stdc++.h>
 #define X first
 #define Y second
 using namespace std;
 using pii = pair<int, int>;
+using tiii = tuple<int, int, int>;
+using LL = long long;
 
-const int MAX_N = 15;
+const int SZ = 15;
+
+// 우/하/좌/상
 const int dx[] = { 0,1,0,-1,-1,-1,1,1 };
 const int dy[] = { 1,0,-1,0,-1,1,1,-1 };
 
-int back_x[MAX_N][MAX_N], back_y[MAX_N][MAX_N];
-int N, M, K, board[MAX_N][MAX_N], ans;
-bool active[MAX_N][MAX_N], vis[MAX_N][MAX_N];
-bool lazer_success;
+int N, M, K, board[SZ][SZ];
+int back_x[SZ][SZ], back_y[SZ][SZ];
+bool vis[SZ][SZ];
+bool attacked[SZ][SZ];
 
-struct Info { int p, x, y, t; };
-vector<Info> turlet;
+struct Turlet { int p, t, x, y; };
+vector<Turlet> turlets, next_turlets;
 
-void print() {
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < M; j++)
-			cout << board[i][j] << ' ';
-		cout << '\n';
-	}
-	cout << "\n\n";
-}
-
-bool cmp(const Info& a, const Info& b) {
-	if (board[a.x][a.y] != board[b.x][b.y]) return board[a.x][a.y] < board[b.x][b.y];
+bool cmp(const Turlet& a, const Turlet& b) {
+	if (a.p != b.p) return a.p < b.p;
 	if (a.t != b.t) return a.t > b.t;
 	if (a.x + a.y != b.x + b.y) return a.x + a.y > b.x + b.y;
 	return a.y > b.y;
 }
 
-void lazer(Info w, Info s) {
+void Attacker(Turlet weak) { board[weak.x][weak.y] += N + M; }
+
+bool BFS(Turlet w, Turlet s) {
 	queue<pii> q;
 
 	q.push({ w.x, w.y });
@@ -50,10 +42,8 @@ void lazer(Info w, Info s) {
 		pii cur = q.front();
 		q.pop();
 
-		if (cur == make_pair(s.x, s.y)) {
-			lazer_success = true;
-			break;
-		}
+		if (cur == make_pair(s.x, s.y))
+			return true;
 
 		for (int dir = 0; dir < 4; dir++) {
 			int nx = (cur.X + dx[dir] + N) % N;
@@ -68,26 +58,33 @@ void lazer(Info w, Info s) {
 		}
 	}
 
-	if (lazer_success) {
-		int p = board[w.x][w.y] / 2;
-		auto [x, y] = make_pair(s.x, s.y);
+	return false;
+}
 
-		while (true) {
-			int nx = back_x[x][y];
-			int ny = back_y[x][y];
-			tie(x, y) = make_pair(nx, ny);
+void LazerAttack(Turlet w, Turlet s, int dis) {
+	int p = board[w.x][w.y];
+	auto [x, y] = make_pair(s.x, s.y);
+	board[x][y] = max(0, board[x][y] - dis);
+	p /= 2;
 
-			if (back_x[x][y] == -1 && back_y[x][y] == -1)
-				break;
+	while (true) {
+		int nx = back_x[x][y];
+		int ny = back_y[x][y];
+		tie(x, y) = make_pair(nx, ny);
 
-			board[x][y] = max(board[x][y] - p, 0);
-			active[x][y] = true;
-		}
+		if (back_x[x][y] == -1 && back_y[x][y] == -1)
+			break;
+
+		board[x][y] = max(board[x][y] - p, 0);
+		attacked[x][y] = true;
 	}
 }
 
-void bomb(Info w, Info s) {
-	int p = board[w.x][w.y] / 2;
+void BombAttack(Turlet w, Turlet s, int dis) {
+	int p = board[w.x][w.y];
+	auto [x, y] = make_pair(s.x, s.y);
+	board[x][y] = max(0, board[x][y] - dis);
+	p /= 2;
 
 	for (int dir = 0; dir < 8; dir++) {
 		int nx = (s.x + dx[dir] + N) % N;
@@ -95,72 +92,75 @@ void bomb(Info w, Info s) {
 
 		if (board[nx][ny] > 0 && make_pair(nx, ny) != make_pair(w.x, w.y)) {
 			board[nx][ny] = max(board[nx][ny] - p, 0);
-			active[nx][ny] = true;
+			attacked[nx][ny] = true;
 		}
 	}
 }
 
-void attack(int t) {
-	Info& weak = turlet[0];
-	Info& strong = turlet[turlet.size() - 1];
+void Attack(Turlet weak, Turlet strong) {
+	int dis = board[weak.x][weak.y];
 
-	weak.t = t;
-	
-	board[weak.x][weak.y] += N + M;
+	if (BFS(weak, strong))
+		LazerAttack(weak, strong, dis);
+	else
+		BombAttack(weak, strong, dis);
 
-	lazer(weak, strong);
-	if (!lazer_success) bomb(weak, strong);
-	board[strong.x][strong.y] = max(board[strong.x][strong.y] - board[weak.x][weak.y], 0);
-
-	for (auto& nxt : turlet)
-		nxt.p = board[nxt.x][nxt.y];
-
-	active[strong.x][strong.y] = true;
-	active[weak.x][weak.y] = true;
+	attacked[weak.x][weak.y] = true;
+	attacked[strong.x][strong.y] = true;
 }
 
-int defense() {
+int Update() {
 	int ret = 0;
-	for (auto& nxt : turlet) {
-		if (nxt.p > 0 && !active[nxt.x][nxt.y]) {
+
+	for (auto& nxt : turlets) {
+		if (!attacked[nxt.x][nxt.y] && board[nxt.x][nxt.y] > 0)
 			board[nxt.x][nxt.y]++;
-			nxt.p++;
+
+		if (board[nxt.x][nxt.y] > 0) {
+			nxt.p = board[nxt.x][nxt.y];
+			next_turlets.push_back(nxt);
+			ret = max(ret, nxt.p);
 		}
-		ret = max(ret, nxt.p);
 	}
+
+	turlets = next_turlets;
+	next_turlets.clear();
+
 	return ret;
 }
 
-void init() {
-	vector<Info> tmp;
-	for (auto nxt : turlet)
-		if (nxt.p > 0) tmp.push_back(nxt);
-
-	turlet = tmp;
-	sort(turlet.begin(), turlet.end(), cmp);
-
-	fill(&active[0][0], &active[0][0] + N * M, false);
-	fill(&vis[0][0], &vis[0][0] + N * M, false);
-
-	lazer_success = false;
+void Init() {
+	fill(&vis[0][0], &vis[N][M], false);
+	fill(&attacked[0][0], &attacked[N][M], false);
+	fill(&back_x[0][0], &back_x[N][M], 0);
+	fill(&back_y[0][0], &back_y[N][M], 0);
+	sort(turlets.begin(), turlets.end(), cmp);
 }
 
 int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
-	
-	cin >> N >> M >> K;
 
+	cin >> N >> M >> K;
 	for (int i = 0; i < N; i++)
 		for (int j = 0; j < M; j++) {
 			cin >> board[i][j];
-			if (board[i][j] > 0) turlet.push_back({ board[i][j],i,j,0 });
+			if (board[i][j] > 0)
+				turlets.push_back({ board[i][j], 0, i, j });
 		}
 
-	for (int i = 1; i <= K; i++) {
-		init();
-		attack(i);
-		ans = defense();
+	int ans = 0;
+	for (int k = 1; k <= K; k++) {
+		Init();
+
+		auto& weak = turlets.front();
+		auto& strong = turlets.back();
+
+		weak.t = k;
+		Attacker(weak);
+		Attack(weak, strong);
+
+		ans = Update();
 	}
 
 	cout << ans;
