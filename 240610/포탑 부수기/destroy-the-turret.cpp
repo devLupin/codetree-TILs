@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
 #define X first
 #define Y second
@@ -8,7 +7,6 @@ using tiii = tuple<int, int, int>;
 using LL = long long;
 
 const int SZ = 15;
-const int INF = 0x3f3f3f;
 
 // 우/하/좌/상
 const int dx[] = { 0,1,0,-1,-1,-1,1,1 };
@@ -29,33 +27,33 @@ bool cmp(const Turlet& a, const Turlet& b) {
 	return a.y > b.y;
 }
 
-bool OOM(int x, int y) { return x < 0 || y < 0 || x >= N || y >= M; }
-
 void Attacker(Turlet weak) { board[weak.x][weak.y] += N + M; }
 
-bool BFS(Turlet src, Turlet dst) {
+bool BFS(Turlet w, Turlet s) {
 	queue<pii> q;
-	q.push({ src.x, src.y });
-	back_x[src.x][src.y] = -1;
-	back_y[src.x][src.y] = -1;
-	vis[src.x][src.y] = true;
+
+	q.push({ w.x, w.y });
+	vis[w.x][w.y] = true;
+
+	back_x[w.x][w.y] = -1;
+	back_y[w.x][w.y] = -1;
 
 	while (!q.empty()) {
 		pii cur = q.front();
 		q.pop();
 
-		if (cur == make_pair(dst.x, dst.y))
+		if (cur == make_pair(s.x, s.y))
 			return true;
 
 		for (int dir = 0; dir < 4; dir++) {
 			int nx = (cur.X + dx[dir] + N) % N;
 			int ny = (cur.Y + dy[dir] + M) % M;
 
-			if (board[nx][ny] > 0 && !vis[nx][ny]) {
+			if (!vis[nx][ny] && board[nx][ny] > 0) {
 				q.push({ nx, ny });
+				vis[nx][ny] = true;
 				back_x[nx][ny] = cur.X;
 				back_y[nx][ny] = cur.Y;
-				vis[nx][ny] = true;
 			}
 		}
 	}
@@ -63,10 +61,11 @@ bool BFS(Turlet src, Turlet dst) {
 	return false;
 }
 
-void LazerAttack(Turlet strong, int dis) {
-	auto [x, y] = make_pair(strong.x, strong.y);
+void LazerAttack(Turlet w, Turlet s, int dis) {
+	int p = board[w.x][w.y];
+	auto [x, y] = make_pair(s.x, s.y);
 	board[x][y] = max(0, board[x][y] - dis);
-	dis /= 2;
+	p /= 2;
 
 	while (true) {
 		int nx = back_x[x][y];
@@ -76,24 +75,23 @@ void LazerAttack(Turlet strong, int dis) {
 		if (back_x[x][y] == -1 && back_y[x][y] == -1)
 			break;
 
-		board[x][y] = max(0, board[x][y] - dis);
+		board[x][y] = max(board[x][y] - p, 0);
 		attacked[x][y] = true;
 	}
 }
 
-void BombAttack(Turlet weak, Turlet strong, int dis) {
-	auto [x, y] = make_pair(strong.x, strong.y);
+void BombAttack(Turlet w, Turlet s, int dis) {
+	int p = board[w.x][w.y];
+	auto [x, y] = make_pair(s.x, s.y);
 	board[x][y] = max(0, board[x][y] - dis);
-	dis /= 2;
+	p /= 2;
 
 	for (int dir = 0; dir < 8; dir++) {
-		int nx = (x + dx[dir] + N) % N;
-		int ny = (y + dy[dir] + M) % M;
+		int nx = (s.x + dx[dir] + N) % N;
+		int ny = (s.y + dy[dir] + M) % M;
 
-		if (weak.x == nx && weak.y == ny) continue;
-
-		if (board[nx][ny] > 0) {
-			board[nx][ny] = max(0, board[nx][ny] - dis);
+		if (board[nx][ny] > 0 && make_pair(nx, ny) != make_pair(w.x, w.y)) {
+			board[nx][ny] = max(board[nx][ny] - p, 0);
 			attacked[nx][ny] = true;
 		}
 	}
@@ -103,7 +101,7 @@ void Attack(Turlet weak, Turlet strong) {
 	int dis = board[weak.x][weak.y];
 
 	if (BFS(weak, strong))
-		LazerAttack(strong, dis);
+		LazerAttack(weak, strong, dis);
 	else
 		BombAttack(weak, strong, dis);
 
@@ -115,16 +113,15 @@ int Update() {
 	int ret = 0;
 
 	for (auto& nxt : turlets) {
-		if (!attacked[nxt.x][nxt.y] && nxt.p > 0) 
+		if (!attacked[nxt.x][nxt.y] && board[nxt.x][nxt.y] > 0)
 			board[nxt.x][nxt.y]++;
-		nxt.p = board[nxt.x][nxt.y];
-	}
 
-	for (auto& nxt : turlets)
-		if (nxt.p > 0) {
-			ret = max(ret, nxt.p);
+		if (board[nxt.x][nxt.y] > 0) {
+			nxt.p = board[nxt.x][nxt.y];
 			next_turlets.push_back(nxt);
+			ret = max(ret, nxt.p);
 		}
+	}
 
 	turlets = next_turlets;
 	next_turlets.clear();
@@ -137,13 +134,12 @@ void Init() {
 	fill(&attacked[0][0], &attacked[N][M], false);
 	fill(&back_x[0][0], &back_x[N][M], 0);
 	fill(&back_y[0][0], &back_y[N][M], 0);
+	sort(turlets.begin(), turlets.end(), cmp);
 }
 
 int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
-
-	// freopen("input.txt", "r", stdin);
 
 	cin >> N >> M >> K;
 	for (int i = 0; i < N; i++)
@@ -156,11 +152,8 @@ int main(void) {
 	int ans = 0;
 	for (int k = 1; k <= K; k++) {
 		Init();
-
-		sort(turlets.begin(), turlets.end(), cmp);
-
-		if (turlets.size() < 2) break;
-
+		if(turlets.size() < 2) break;
+		
 		auto& weak = turlets.front();
 		auto& strong = turlets.back();
 
