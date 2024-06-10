@@ -113,15 +113,16 @@ int Update() {
 	int ret = 0;
 
 	for (auto& nxt : turlets) {
-		if (!attacked[nxt.x][nxt.y] && board[nxt.x][nxt.y] > 0)
+		if (!attacked[nxt.x][nxt.y] && nxt.p > 0) 
 			board[nxt.x][nxt.y]++;
-
-		if (board[nxt.x][nxt.y] > 0) {
-			nxt.p = board[nxt.x][nxt.y];
-			next_turlets.push_back(nxt);
-			ret = max(ret, nxt.p);
-		}
+		nxt.p = board[nxt.x][nxt.y];
 	}
+
+	for (auto& nxt : turlets)
+		if (nxt.p > 0) {
+			ret = max(ret, nxt.p);
+			next_turlets.push_back(nxt);
+		}
 
 	turlets = next_turlets;
 	next_turlets.clear();
