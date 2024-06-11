@@ -1,9 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <iostream>
-#include <tuple>
-#include <vector>
-#include <queue>
-#include <algorithm>
+#include <bits/stdc++.h>
 #define X first
 #define Y second
 using namespace std;
@@ -11,7 +6,6 @@ using pii = pair<int, int>;
 using tiii = tuple<int, int, int>;
 
 const int SZ = 20;
-// 우, 상, 좌, 하
 const int dx[] = { 0,-1,0,1 };
 const int dy[] = { 1,0,-1,0 };
 
@@ -21,15 +15,6 @@ vector<pii> head;
 vector<int> ngroup;
 
 bool oom(int x, int y) { return x < 0 || y < 0 || x >= N || y >= N; }
-
-void print() {
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++)
-			cout << board[i][j] << ' ';
-		cout << '\n';
-	}
-	cout << "\n\n";
-}
 
 void grouping() {
 	bool vis[SZ][SZ] = { false, };
@@ -144,8 +129,6 @@ void attack() {
 int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
-
-	// freopen("input.txt", "r", stdin);
 
 	cin >> N >> M >> K;
 
