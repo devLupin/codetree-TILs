@@ -9,7 +9,7 @@ using pii = pair<int, int>;
 using tiii = tuple<int, int, int>;
 
 const int MAX_N = 20;
-const int INF = MAX_N * MAX_N;
+const int INF = 0x3f3f3f3f;
 // ↑, ←, →, ↓ 
 const int dx[] = { -1,0,0,1 };
 const int dy[] = { 0,-1,1,0 };
