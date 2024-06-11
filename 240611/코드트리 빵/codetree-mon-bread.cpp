@@ -9,6 +9,7 @@ using pii = pair<int, int>;
 using tiii = tuple<int, int, int>;
 
 const int MAX_N = 20;
+const int INF = MAX_N * MAX_N;
 // ↑, ←, →, ↓ 
 const int dx[] = { -1,0,0,1 };
 const int dy[] = { 0,-1,1,0 };
@@ -43,14 +44,14 @@ int bfs(pii src, pii dst) {
 		}
 	}
     
-	return MAX_N * MAX_N;
+	return INF;
 }
 
 void move(int t) {
 	for (int i = 1; i < min(t, M + 1); i++) {
 		if (is_arrived[conv[i].X][conv[i].Y]) continue;
 
-		int cur, cmp = MAX_N * MAX_N;
+		int cur, cmp = INF;
 
 		for (int dir = 0; dir < 4; dir++) {
 			int nx = user[i].X + dx[dir];
@@ -77,7 +78,7 @@ void move(int t) {
 void enter(int t) {
 	if (t > M) return;
 
-	int cur, cmp = MAX_N * MAX_N;
+	int cur, cmp = INF;
 
 	for (int i = 1; i < base.size(); i++) {
 		if (is_arrived[base[i].X][base[i].Y]) continue;
@@ -121,7 +122,7 @@ int main(void) {
 	}
 
 	int t = 1;
-	while (t < 10) {
+	while (true) {
 		move(t);
 		enter(t);
 		if (!run()) break;
