@@ -1,9 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <tuple>
-#include <algorithm>
 #include <vector>
 #include <queue>
+#include <algorithm>
 #define X first
 #define Y second
 using namespace std;
@@ -78,7 +78,7 @@ void fight(int n1, int n2, int x, int y) {
 	}
 	else if (sum1 < sum2) {
 		win = n2;
-		lose = n2;
+		lose = n1;
 	}
 	else {
 		if (info[n1].s > info[n2].s) {
@@ -87,7 +87,7 @@ void fight(int n1, int n2, int x, int y) {
 		}
 		else {
 			win = n2;
-			lose = n2;
+			lose = n1;
 		}
 	}
 
@@ -158,8 +158,7 @@ int main(void) {
 		board[x][y] = i;
 	}
 
-	while (K--)
-		move();
+	while (K--) move();
 
 	for (int i = 1; i <= M; i++) cout << ans[i] << ' ';
 	return 0;
