@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <tuple>
 #include <vector>
@@ -17,6 +18,7 @@ const int dy[] = { 1,0,-1,0 };
 int N, M, K, board[SZ][SZ], tt, tdir, ans;
 vector<vector<pii>> groups;
 vector<pii> head;
+vector<int> ngroup;
 
 bool oom(int x, int y) { return x < 0 || y < 0 || x >= N || y >= N; }
 
@@ -35,6 +37,7 @@ void grouping() {
 	for (auto nxt : head) {
 		queue<pii> q;
 		vector<pii> v;
+		int cnt = 0;
 
 		q.push(nxt);
 		vis[nxt.X][nxt.Y] = true;
@@ -44,6 +47,7 @@ void grouping() {
 			q.pop();
 
 			v.push_back(cur);
+			if (board[cur.X][cur.Y] <= 3) cnt++;
 
 			for (int dir = 0; dir < 4; dir++) {
 				int nx = cur.X + dx[dir];
@@ -57,6 +61,7 @@ void grouping() {
 		}
 
 		groups.push_back(v);
+		ngroup.push_back(cnt);
 	}
 }
 
@@ -124,7 +129,8 @@ void attack() {
 			pii& rear = groups[gnum][ridx];
 
 			swap(board[front.X][front.Y], board[rear.X][rear.Y]);
-			reverse(groups[gnum].begin(), groups[gnum].end());
+			reverse(groups[gnum].begin(), groups[gnum].begin() + ngroup[gnum]);
+			reverse(groups[gnum].begin() + ngroup[gnum], groups[gnum].end());
 
 			ans += order * order;
 			return;
@@ -138,6 +144,8 @@ void attack() {
 int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
+
+	// freopen("input.txt", "r", stdin);
 
 	cin >> N >> M >> K;
 
