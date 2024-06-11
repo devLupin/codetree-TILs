@@ -42,6 +42,8 @@ int bfs(pii src, pii dst) {
 			vis[nx][ny] = true;
 		}
 	}
+    
+	return MAX_N * MAX_N;
 }
 
 void move(int t) {
