@@ -95,7 +95,7 @@ void spread() {
 
 	if (cmp > 0) {
 
-		herbicide[x][y] = C;
+		herbicide[x][y] = C + 1;
 		board[x][y] = 0;
 
 		for (int k = 4; k < 8; k++) {
@@ -104,7 +104,7 @@ void spread() {
 			int cnt = K;
 
 			while (!oom(nx, ny) && cnt--) {
-				herbicide[nx][ny] = C;
+				herbicide[nx][ny] = C + 1;
 
 				if (board[nx][ny] <= 0) break;
 
@@ -137,6 +137,7 @@ int main(void) {
 		growth();
 		breeding();
 		spread();
+		update();
 	}
 
 	cout << ans;
