@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 using namespace std;
 
@@ -76,14 +75,17 @@ void spread() {
 			int sum = board[i][j];
 
 			for (int k = 4; k < 8; k++) {
-				int nx = i + dx[k];
-				int ny = j + dy[k];
-				int cnt = K;
+				int nx = i;
+				int ny = j;
 
-				while (!oom(nx, ny) && board[nx][ny] >= 0 && cnt--) {
-					sum += board[nx][ny];
+				for (int t = 0; t < K; t++) {
 					nx += dx[k];
 					ny += dy[k];
+
+					if (oom(nx, ny)) break;
+					if (board[nx][ny] <= 0) break;
+
+					sum += board[nx][ny];
 				}
 			}
 
