@@ -58,8 +58,10 @@ void moveM() {
 					if (chk) {
 						int nx = x + dx[d];
 						int ny = y + dy[d];
-						monster[TURN][nx][ny][d] = monster[TURN - 1][x][y][k];
+						monster[TURN][nx][ny][d] += monster[TURN - 1][x][y][k];
 					}
+					else
+						monster[TURN][x][y][k] += monster[TURN - 1][x][y][k];
 				}
 }
 
