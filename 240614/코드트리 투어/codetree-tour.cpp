@@ -48,9 +48,9 @@ void dijkstra(int st) {
 
 		if (cost[cur_node] < cur_dist) continue;
 
-		for (auto& [nxt_node, nxt_dist] : adj[cur_node]) {
+		for (auto [nxt_node, nxt_dist] : adj[cur_node]) {
 			nxt_dist += cur_dist;
-			
+
 			if (cost[nxt_node] > nxt_dist) {
 				cost[nxt_node] = nxt_dist;
 				pq.push({ -nxt_dist, nxt_node });
@@ -76,14 +76,14 @@ void q200() {
 }
 
 void q300(int id) {
-	if (pid[id] > 0) pid[id] = 0;
+	if (pid[id] > 0) pid[id]--;
 }
 
 void q400() {
 	while (!que.empty()) {
 		Info cur = que.top();
 
-		if (cur.dist > cur.revenue) break;
+		if (cur.revenue - cur.dist < 0) break;
 		que.pop();
 
 		if (pid[cur.id] > 0) {
@@ -99,13 +99,12 @@ void q500() {
 	vector<Info> v;
 	int s;
 	cin >> s;
+	dijkstra(s);
 
 	while (!que.empty()) {
 		v.push_back(que.top());
 		que.pop();
 	}
-
-	dijkstra(s);
 
 	for (auto& nxt : v) {
 		nxt.dist = cost[nxt.dest];
