@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <vector>
 #include <queue>
@@ -23,12 +24,26 @@ int tx, ty;
 int tcnt, tmax = 1, maxcnt, tdir;
 bool rev;
 
+void print() {
+	for (int x = 0; x < N; x++) {
+		for (int y = 0; y < N; y++) {
+			int cnt = 0;
+			for (int k = 0; k < DIR_NUM; k++)
+				if (runner[T][x][y][k] > 0) cnt += runner[T][x][y][k];
+
+			cout << cnt << ' ';
+		}
+		cout << '\n';
+	}
+	cout << '\n';
+}
+
 int distance(int x, int y) { return abs(tx - x) + abs(ty - y); }
 bool oom(int x, int y) { return x < 0 || y < 0 || x >= N || y >= N; }
 
 void moveR() {
-	for(int x = 0; x < N; x++)
-		for(int y = 0; y < N; y++)
+	for (int x = 0; x < N; x++)
+		for (int y = 0; y < N; y++)
 			for (int k = 0; k < DIR_NUM; k++)
 				if (runner[T - 1][x][y][k] > 0) {
 					if (distance(x, y) > 3) {
@@ -38,12 +53,13 @@ void moveR() {
 
 					int nx, ny, d = k;
 
-					if (oom(x + dx[d], y + dx[d])) d = (d + 2) % 4;
+					if (oom(x + dx[d], y + dy[d])) 
+						d = (d + 2) % 4;
 
 					nx = x + dx[d];
 					ny = y + dy[d];
 
-					if(nx == tx && ny == ty) runner[T][x][y][k] += runner[T - 1][x][y][k];
+					if (nx == tx && ny == ty) runner[T][x][y][k] += runner[T - 1][x][y][k];
 					else runner[T][nx][ny][d] += runner[T - 1][x][y][k];
 				}
 }
@@ -52,14 +68,14 @@ void moveT() {
 	if (!rev) {
 		tx += dx[tdir];
 		ty += dy[tdir];
-		
+
 		tcnt++;
 		if (tcnt == tmax) {
 			tcnt = 0;
 			tdir = (tdir + 1) % 4;
 
 			maxcnt++;
-			
+
 			if (maxcnt == 2) {
 				maxcnt = 0;
 				tmax++;
@@ -101,20 +117,21 @@ void moveT() {
 	}
 }
 
-void catchR () {
+void catchR() {
 	int ttx, tty, sum = 0;
+	int x = tx, y = ty;
+
 	if (!rev) tie(ttx, tty) = make_pair(dx[tdir], dy[tdir]);
 	else tie(ttx, tty) = make_pair(ddx[tdir], ddy[tdir]);
 
 	for (int i = 0; i < 3; i++) {
-		int nx = tx + ttx * i;
-		int ny = ty + tty * i;
-
-		if (!oom(nx, ny) && !board[nx][ny]) 
+		if(!oom(x, y) && !board[x][y])
 			for (int k = 0; k < DIR_NUM; k++) {
-				sum += runner[T][nx][ny][k];
-				runner[T][nx][ny][k] = 0;
+				sum += runner[T][x][y][k];
+				runner[T][x][y][k] = 0;
 			}
+		x += ttx;
+		y += tty;
 	}
 
 	ans += T * sum;
@@ -123,6 +140,8 @@ void catchR () {
 int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
+
+	// freopen("input.txt", "r", stdin);
 
 	cin >> N >> M >> H >> K;
 
@@ -139,7 +158,7 @@ int main(void) {
 	}
 
 	tie(tx, ty) = make_pair(N / 2, N / 2);
-
+	
 	while (T++ < K) {
 		moveR();
 		moveT();
