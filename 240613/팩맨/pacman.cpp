@@ -97,6 +97,7 @@ void dfs(int x, int y, vector<int> dirs) {
 
 void moveP() {
 	routes.clear();
+	cmp = 0;
 	fill(&vis[0][0], &vis[SZ][SZ], false);
 
 	dfs(px, py, {});
