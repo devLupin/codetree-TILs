@@ -65,47 +65,45 @@ void moveM() {
 				}
 }
 
-void dfs(int x, int y, vector<int> dirs) {
-	if (dirs.size() == 3) {
-		int sum = 0;
-		int x = px, y = py;
+int GetKilledNum(int d1, int d2, int d3) {
+	auto [x, y] = make_pair(px, py);
+	int ret = 0;
 
-		for (int dir : dirs) {
-			x += ddx[dir];
-			y += ddy[dir];
+	bool vis[SZ][SZ] = { false, };
 
-			for (int k = 0; k < DIR_NUM; k++)
-				sum += monster[TURN][x][y][k];
-		}
-
-		if (cmp < sum) {
-			cmp = sum;
-			routes = dirs;
-		}
-
-		return;
-	}
-
-	for (int dir = 0; dir < 4; dir++) {
+	for (int dir : {d1, d2, d3}) {
 		int nx = x + ddx[dir];
 		int ny = y + ddy[dir];
 
-		if (oom(nx, ny) || vis[nx][ny]) continue;
+		if (oom(nx, ny)) return -1;
+		if (!vis[nx][ny]) {
+			for (int k = 0; k < DIR_NUM; k++)
+				ret += monster[TURN][nx][ny][k];
+			vis[nx][ny] = true;
+		}
 
-		vis[nx][ny] = true;
-		dirs.push_back(dir);
-		dfs(nx, ny, dirs);
-		vis[nx][ny] = false;
-		dirs.pop_back();
+		tie(x, y) = make_pair(nx, ny);
 	}
+
+	return ret;
 }
 
 void moveP() {
-	routes.clear();
-	cmp = 0;
-	fill(&vis[0][0], &vis[SZ][SZ], false);
+	auto [x, y] = make_pair(px, py);
+	vector<int> routes;
+	int cmp = -1;
 
-	dfs(px, py, {});
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			for (int k = 0; k < 4; k++) {
+				int cnt = GetKilledNum(i, j, k);
+				if (cmp < cnt) {
+					cmp = cnt;
+					routes = { i, j, k };
+				}
+			}
+		}
+	}
 
 	for (int dir : routes) {
 		px += ddx[dir];
