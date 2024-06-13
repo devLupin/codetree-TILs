@@ -55,8 +55,11 @@ void moveM() {
 						break;
 					}
 
-					if (chk)
-						monster[TURN][x + dx[d]][y + dy[d]][d] = monster[TURN - 1][x][y][k];
+					if (chk) {
+						int nx = x + dx[d];
+						int ny = y + dy[d];
+						monster[TURN][nx][ny][d] = monster[TURN - 1][x][y][k];
+					}
 				}
 }
 
@@ -108,7 +111,7 @@ void moveP() {
 
 		for (int k = 0; k < DIR_NUM; k++)
 			if (monster[TURN][px][py][k] > 0) {
-				die[px][py] = 2;
+				die[px][py] = 3;
 				monster[TURN][px][py][k] = 0;
 			}
 	}
