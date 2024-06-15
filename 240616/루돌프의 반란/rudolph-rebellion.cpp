@@ -79,11 +79,12 @@ void collision(int snum, int ddx, int ddy, int cnt) {
 	}
 	else {
 		stack<pii> st;
+		st.push({ x, y });
 
-		while (!oom(x, y) && board[x][y] != 0) {
-			st.push({ x, y });
-			x += ddx;
-			y += ddy;
+		while (!oom(nx, ny) && board[nx][ny] != 0) {
+			st.push({ nx, ny });
+			nx += ddx;
+			ny += ddy;
 		}
 		
 		interaction(st, ddx, ddy);
