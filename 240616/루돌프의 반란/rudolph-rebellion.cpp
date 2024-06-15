@@ -88,8 +88,6 @@ void collision(int snum, int ddx, int ddy, int cnt) {
 		
 		interaction(st, ddx, ddy);
 	}
-
-	stun[snum] = 2;
 }
 
 void moveR() {
@@ -115,6 +113,7 @@ void moveR() {
 
 	if (snum > 0) {
 		ans[snum] += C;
+		stun[snum] = 2;
 		collision(snum, ddx, ddy, C);
 	}
 	
@@ -150,6 +149,7 @@ void moveS() {
 
 		if (board[nx][ny] == -1) {
 			ans[i] += D;
+			stun[i] = 2;
 			collision(i, -dx[ndir], -dy[ndir], D - 1);
 		}
 		else {
@@ -172,6 +172,15 @@ bool run() {
 	return false;
 }
 
+void print() {
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++)
+			cout << board[i][j] << ' ';
+		cout << '\n';
+	}
+	cout << '\n';
+}
+
 int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
@@ -189,7 +198,7 @@ int main(void) {
 		board[x][y] = n;
 		pos[n] = { x, y };
 	}
-	
+
 	while (M-- && run()) {
 		moveR();
 		moveS();
