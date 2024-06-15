@@ -78,9 +78,13 @@ void dfs(int x, int y, int dir, int sum) {
 		if (!oom(nx, ny) && board[nx][ny] > 0) {
 			int num = board[nx][ny];
 
+			board[x][y] = 0;
 			board[nx][ny] = -1;
 			chess[num].live = false;
+
 			dfs(nx, ny, chess[num].d, sum + num);
+			
+			board[x][y] = -1;
 			board[nx][ny] = num;
 			chess[num].live = true;
 		}
