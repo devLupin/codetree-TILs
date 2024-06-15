@@ -33,74 +33,33 @@ void change(int cc, int nn, int nd) {
 	Info cur = chess[cc];
 	Info nxt = chess[nn];
 
-	swap(board[cur.x][cur.y], board[nxt.x][nxt.y]);
-
 	if (board[nxt.x][nxt.y] == 0) {
 		chess[cc].x = nxt.x;
 		chess[cc].y = nxt.y;
+		board[nxt.x][nxt.y] = cc;
+		board[cur.x][cur.y] = 0;
 	}
 	else {
 		chess[cc] = { nxt.x, nxt.y, nd, cur.live };
 		chess[nn] = { cur.x, cur.y, nxt.d, nxt.live };
+		swap(board[cur.x][cur.y], board[nxt.x][nxt.y]);
 	}
 }
 
 void move() {
-	for (int i = 1; i <= 16; i++) {
+	for (int i = 1; i <= SZ * SZ; i++) {
 		if (!chess[i].live) continue;
 
-		auto& cur = chess[i];
+		auto [x, y, d, live] = chess[i];
 
-		int x = cur.x;
-		int y = cur.y;
-		int d = cur.d;
-		int nx = x + dx[d];
-		int ny = y + dy[d];
+		for (int k = 0; k < DIR_NUM; k++) {
+			int nd = (d + k) % DIR_NUM;
+			int nx = x + dx[nd];
+			int ny = y + dy[nd];
 
-		bool flag = false;
-
-		if (!oom(nx, ny)) {
-			if (board[nx][ny] == 0) {
-				flag = true;
-				cur.x = nx;
-				cur.y = ny;
-				board[nx][ny] = i;
-				board[x][y] = 0;
-			}
-			else if (board[nx][ny] != -1) {
-				flag = true;
-				change(i, board[nx][ny], d);
-			}
-		}
-
-		if (!flag) {
-			int nd = d + 1;
-			if (nd == DIR_NUM) nd = 0;
-
-			nx = x + dx[nd];
-			ny = y + dy[nd];
-
-			while (nd != d) {
-				if (!oom(nx, ny)) {
-					if (board[nx][ny] == 0) {
-						cur.x = nx;
-						cur.y = ny;
-						board[nx][ny] = i;
-						board[x][y] = 0;
-						chess[i].d = nd;
-						break;
-					}
-					else if (board[nx][ny] != -1) {
-						change(i, board[nx][ny], nd);
-						break;
-					}
-				}
-
-				nd++;
-				if (nd == DIR_NUM) nd = 0;
-
-				nx = x + dx[nd];
-				ny = y + dy[nd];
+			if (!oom(nx, ny) && board[nx][ny] >= 0) {
+				change(i, board[nx][ny], nd);
+				break;
 			}
 		}
 	}
