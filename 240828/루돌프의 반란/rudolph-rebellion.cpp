@@ -81,7 +81,7 @@ void Collision(int snum, int damage, int ddx, int ddy, int cnt)
 	int nnx = nx;
 	int nny = ny;
 
-	while (!OOM(nnx, nny) && board[nnx][nny] > 0)
+	while (!OOM(nnx, nny) && board[nnx][nny] > 0 && board[nnx][nny] != board[x][y])
 	{
 		st.push({ nnx, nny });
 		nnx += ddx;
