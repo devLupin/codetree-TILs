@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
 #define X first
 #define Y second
@@ -22,8 +21,8 @@ int stun[MAX_P];
 bool out[MAX_P];
 int score[MAX_P];
 
-const int dx[] = { -1,0,1,0,-1,-1,1,1 };
-const int dy[] = { 0,1,0,-1,-1,1,1,-1 };
+const int dx[] = { -1,0,1,0 };
+const int dy[] = { 0,1,0,-1 };
 
 int Diff(int ruX, int ruY, int sanX, int sanY) { return (ruX - sanX) * (ruX - sanX) + (ruY - sanY) * (ruY - sanY); }
 
@@ -53,6 +52,9 @@ void Collision(int snum, int moveX, int moveY, int cnt)
 	auto [x, y] = spos[snum];
 	int nx = x + moveX * cnt;
 	int ny = y + moveY * cnt;
+
+	if (make_pair(x, y) == make_pair(nx, ny))
+		return;
 
 	if (OOM(nx, ny))
 	{
@@ -180,20 +182,6 @@ bool Done()
 	}
 
 	return ret;
-}
-
-void Print()
-{
-	for (int i = 1; i <= N; i++)
-	{
-		for (int j = 1; j <= N; j++)
-		{
-			if (board[i][j] == RUDOLF) cout << 'R' << ' ';
-			else cout << board[i][j] << ' ';
-		}
-		cout << '\n';
-	}
-	cout << "\n\n";
 }
 
 int main(void) {
