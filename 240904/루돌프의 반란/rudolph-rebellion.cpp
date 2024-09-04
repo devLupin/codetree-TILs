@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
 #define X first
 #define Y second
@@ -36,9 +37,15 @@ void Interaction(stack<int> st, int tx, int ty, int moveX, int moveY)
 		auto [x, y] = spos[snum];
 		st.pop();
 
+		if (OOM(tx, ty))
+		{
+			board[x][y] = 0;
+			out[snum] = true;
+			continue;
+		}
+
 		swap(board[x][y], board[tx][ty]);
 		spos[snum] = { tx, ty };
-		if (OOM(tx, ty)) out[snum] = true;
 
 		tx -= moveX;
 		ty -= moveY;
@@ -182,6 +189,20 @@ bool Done()
 	}
 
 	return ret;
+}
+
+void Print()
+{
+	for (int i = 1; i <= N; i++)
+	{
+		for (int j = 1; j <= N; j++)
+		{
+			if (board[i][j] == RUDOLF) cout << 'R' << ' ';
+			else cout << board[i][j] << ' ';
+		}
+		cout << '\n';
+	}
+	cout << "\n\n";
 }
 
 int main(void) {
