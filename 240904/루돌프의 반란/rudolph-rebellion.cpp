@@ -41,11 +41,12 @@ void Interaction(stack<int> st, int tx, int ty, int moveX, int moveY)
 		{
 			board[x][y] = 0;
 			out[snum] = true;
-			continue;
 		}
-
-		swap(board[x][y], board[tx][ty]);
-		spos[snum] = { tx, ty };
+		else
+		{
+			swap(board[x][y], board[tx][ty]);
+			spos[snum] = { tx, ty };
+		}
 
 		tx -= moveX;
 		ty -= moveY;
@@ -189,20 +190,6 @@ bool Done()
 	}
 
 	return ret;
-}
-
-void Print()
-{
-	for (int i = 1; i <= N; i++)
-	{
-		for (int j = 1; j <= N; j++)
-		{
-			if (board[i][j] == RUDOLF) cout << 'R' << ' ';
-			else cout << board[i][j] << ' ';
-		}
-		cout << '\n';
-	}
-	cout << "\n\n";
 }
 
 int main(void) {
