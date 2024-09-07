@@ -62,19 +62,6 @@ set<int> CanGo(int n, int dir)
 			q.push({ nx, ny });
 			vis[nx][ny] = true;
 		}
-
-		for (int ddir = 0; ddir < 4; ddir++)
-		{
-			if (dir == ddir) continue;
-			nx = cur.X + dx[ddir];
-			ny = cur.Y + dy[ddir];
-
-			if (!OOM(nx, ny) && !vis[nx][ny] && board[nx][ny] == board[cur.X][cur.Y])
-			{
-				q.push({ nx, ny });
-				vis[nx][ny] = true;
-			}
-		}
 	}
 
 	return node;
