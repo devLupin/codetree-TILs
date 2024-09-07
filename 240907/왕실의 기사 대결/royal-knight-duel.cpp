@@ -1,8 +1,8 @@
 /**
  * @author lupin
  * @date 2024-09-07
- * @write_time 0:45:15
- * @commit_time 1:00:28
+ * @submit_time 00:45:15
+ * @revision1 00:48:15
  */
 
 
@@ -77,9 +77,14 @@ set<int> CanGo(int n, int dir)
 		}
 	}
 
-	for (int nn : node)
+	return node;
+}
+
+bool Check(set<int> node, int dir)
+{
+	for (int n : node)
 	{
-		auto [r, c, h, w, k] = knights[nn];
+		auto [r, c, h, w, k] = knights[n];
 
 		for (int i = r; i < r + h; i++)
 			for (int j = c; j < c + w; j++)
@@ -88,11 +93,11 @@ set<int> CanGo(int n, int dir)
 				int ny = j + dy[dir];
 
 				if (OOM(nx, ny) || chess[nx][ny] == WALL)
-					return {};
+					return false;
 			}
 	}
 
-	return node;
+	return true;
 }
 
 void Move(set<int> node, int dir, int target)
@@ -147,6 +152,17 @@ void Move(set<int> node, int dir, int target)
 	}
 }
 
+void Print()
+{
+	for (int i = 1; i <= L; i++) 
+	{
+		for (int j = 1; j <= L; j++)
+			cout << board[i][j] << ' ';
+		cout << '\n';
+	}
+	cout << "\n\n";
+}
+
 int main(void) {
 	FAST_IO();
 	// freopen("input.txt", "r", stdin);
@@ -171,11 +187,14 @@ int main(void) {
 	for (int n, dir; Q--;)
 	{
 		cin >> n >> dir;
-
 		if (out[n]) continue;
+
 		auto node = CanGo(n, dir);
-		if (node.empty()) continue;
-		Move(node, dir, n);
+		if (Check(node, dir)) 
+		{
+			Move(node, dir, n);
+			// Print();
+		}
 	}
 
 	cout << ans;
