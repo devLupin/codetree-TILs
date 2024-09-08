@@ -185,8 +185,8 @@ int main(void) {
 	while (Run() && ++t)
 	{
 		Move(t);
-		EnterBasecamp(t);
 		Update(t);
+		EnterBasecamp(t);
 	}
 
 	cout << t;
