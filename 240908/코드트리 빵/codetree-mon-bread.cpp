@@ -2,6 +2,8 @@
  * @author lupin
  * @date 2024-09-07
  * @submit_time 00:52:00
+ * @revision1 00:05:44
+ * @revision1 00:02:01
  */
 
 
@@ -59,7 +61,7 @@ tiii BFS(pii src, pii dst)
 		}
 	}
 
-	return {};
+	return {MAX_M, -1, -1};
 }
 
 void EnterBasecamp(int t)
@@ -187,6 +189,7 @@ int main(void) {
 		Move(t);
 		Update(t);
 		EnterBasecamp(t);
+		// Print();
 	}
 
 	cout << t;
