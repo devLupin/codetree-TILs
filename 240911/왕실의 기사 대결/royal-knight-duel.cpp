@@ -4,7 +4,7 @@
  *
  * @submit_time 00:45:15
  * @revision1 00:48:15
- * @revision2 2024-09-11 00:29:55
+ * @revision2 2024-09-11
  */
 
 
@@ -29,6 +29,7 @@ int L, N, Q;
 int chess[MAX_L][MAX_L], board[MAX_L][MAX_L];
 bool vis[MAX_L][MAX_L];
 bool die[MAX_N];
+int hp[MAX_N];
 
 struct Info { int r, c, h, w, k; };
 vector<Info> knights;
@@ -117,26 +118,20 @@ int Calc(set<int> st, int target)
 	{
 		if (n == target) continue;
 
-		int cur = 0;
 		auto& [r, c, h, w, k] = knights[n];
 		
 		for (int i = r; i < r + h; i++)
 			for (int j = c; j < c + w; j++)
-				cur += chess[i][j];
+				if (chess[i][j] == 1)hp[n]--;
 
-		k -= cur;
-
-		if (k <= 0)
+		if (hp[n] <= 0)
 		{
 			for (int i = r; i < r + h; i++)
 				for (int j = c; j < c + w; j++)
 					board[i][j] = 0;
 		
 			die[n] = true;
-			r = c = h = w = k = 0;
 		}
-		else
-			ret += cur;
 	}
 
 	return ret;
@@ -167,13 +162,12 @@ int main(void)
 	{
 		cin >> r >> c >> h >> w >> k;
 		knights[n] = { r, c, h, w, k };
+		hp[n] = k;
 
 		for (int i = r; i < r + h; i++)
 			for (int j = c; j < c + w; j++)
 				board[i][j] = n;
 	}
-
-	int ans = 0;
 
 	for (int n, dir; Q--;)
 	{
@@ -184,11 +178,14 @@ int main(void)
 		if (!st.empty())
 		{
 			Move(st, dir);
-			ans += Calc(st, n);
+			Calc(st, n);
 		}
 
 		// Print();
 	}
+	int ans = 0;
+	for (int i = 1; i <= N; i++)
+		if (hp[i] > 0) ans += knights[i].k - hp[i];
 	cout << ans;
 
 	return 0;
