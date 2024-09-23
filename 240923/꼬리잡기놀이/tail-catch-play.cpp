@@ -28,6 +28,7 @@ int board[MAX_N][MAX_N];
 bool vis[MAX_N][MAX_N];
 vector<pii> head;
 vector<vector<pii>> groups;
+vector<int> ngroup;
 
 void Print()
 {
@@ -47,6 +48,7 @@ void MakeGroup()
 	for (auto& [hx, hy] : head)
 	{
 		queue<pii> q;
+		int cnt = 0;
 
 		groups.push_back({});
 		groups.back().push_back({ hx, hy });
@@ -57,6 +59,8 @@ void MakeGroup()
 		{
 			auto [x, y] = q.front();
 			q.pop();
+
+			if (board[x][y] <= 3) cnt++;
 
 			for (int dir = 0; dir < 4; dir++)
 			{
@@ -71,6 +75,8 @@ void MakeGroup()
 				}
 			}
 		}
+
+		ngroup.push_back(cnt);
 	}
 }
 
@@ -109,44 +115,42 @@ pii GetAttakPoint()
 	if (tDir == 3) return make_pair(0, N - 1 - t);
 }
 
-int GetGroupNum(int x, int y)
+tiii Target(pii pos) 
 {
-	for (int g = 0; g < groups.size(); g++)
-		for (auto& nxt : groups[g])
-			if (nxt == make_pair(x, y))
-				return g;
+	int gnum = -1, rear = -1, order = -1;
+
+	for (int i = 0; i < groups.size(); i++)
+		for (int j = 0; j < groups[i].size(); j++) {
+			pii cmp = groups[i][j];
+
+			if (cmp == pos) {
+				gnum = i;
+				order = j;
+			}
+			if (gnum != -1 && board[cmp.X][cmp.Y] == 3)
+				rear = j;
+			if (gnum != -1 && rear != -1)
+				return make_tuple(gnum, rear, order + 1);
+		}
 }
 
-void Attack(int x, int y)
+void Attack(int x, int y) 
 {
-	while (!OOM(x, y))
-	{
+
+	while (!OOM(x, y)) {
 		int val = board[x][y];
 
-		if (val > 0 && val < 4)
-		{
-			int gnum = GetGroupNum(x, y);
-			int rIdx;
-
-			for (int i = 0; i < groups[gnum].size() - 1; i++)
-			{
-				if (groups[gnum][i] == make_pair(x, y))
-				{
-					rIdx = i;
-					break;
-				}
-			}
-
+		if (val > 0 && val < 4) {
+			auto [gnum, ridx, order] = Target({ x,y });
 			pii& front = groups[gnum][0];
-			pii& rear = groups[gnum][rIdx];
-
-			score += (rIdx + 1) * (rIdx + 1);
+			pii& rear = groups[gnum][ridx];
 
 			swap(board[front.X][front.Y], board[rear.X][rear.Y]);
-			reverse(groups[gnum].begin(), groups[gnum].begin() + rIdx);
-			reverse(groups[gnum].begin() + rIdx, groups[gnum].end());
+			reverse(groups[gnum].begin(), groups[gnum].begin() + ngroup[gnum]);
+			reverse(groups[gnum].begin() + ngroup[gnum], groups[gnum].end());
 
-			break;
+			score += order * order;
+			return;
 		}
 
 		x += dx[tDir];
