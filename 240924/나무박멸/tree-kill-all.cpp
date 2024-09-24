@@ -4,20 +4,17 @@
  *
  * @submit         01:43:43
  * @revision       00:04:03
+ * @revision       00:03:27
  */
 
 
 #define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
-#define X first
-#define Y second
 #define FAST_IO() \
 	ios::sync_with_stdio(false); \
 	cin.tie(NULL);
 
 using namespace std;
-using pii = pair<int, int>;
-using tiii = tuple<int, int, int>;
 
 const int dx[] = { -1,1,0,0,-1,-1,1,1 };
 const int dy[] = { 0,0,-1,1,-1,1,1,-1 };
@@ -27,27 +24,6 @@ int N, M, K, C, ans;
 int board[MAX_N][MAX_N], tempBoard[MAX_N][MAX_N], herbicide[MAX_N][MAX_N];
 bool vis[MAX_N][MAX_N];
 int val;
-
-void Print()
-{
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < N; j++)
-			cout << board[i][j] << ' ';
-		cout << '\n';
-	}
-	cout << "\n\n";
-}
-void PrintDecay()
-{
-	for (int i = 0; i < N; i++)
-	{
-		for (int j = 0; j < N; j++)
-			cout << herbicide[i][j] << ' ';
-		cout << '\n';
-	}
-	cout << "\n\n";
-}
 
 bool OOM(int x, int y) { return x < 0 || y < 0 || x >= N || y >= N; }
 
@@ -139,7 +115,7 @@ void Search(int x, int y, int dir, int cnt, bool del)
 	}
 }
 
-void Spray()
+bool Spray()
 {
 	int tx = 0, ty = 0, cmp = 0;
 
@@ -172,7 +148,7 @@ void Spray()
 		}
 	}
 
-	if (cmp == 0) return;
+	if (cmp == 0) return false;
 
 	fill(&vis[0][0], &vis[N][N], false);
 	vis[tx][ty] = true;
@@ -189,6 +165,8 @@ void Spray()
 		if (!OOM(nx, ny) && !vis[nx][ny] && board[nx][ny] >= 0)
 			Search(nx, ny, dir, K - 1, true);
 	}
+
+	return true;
 }
 
 void Decay()
@@ -212,7 +190,7 @@ int main(void)
 	{
 		Growth();
 		Breed();
-		Spray();
+		if(!Spray()) break;
 		Decay();
 	}
 
