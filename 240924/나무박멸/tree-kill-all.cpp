@@ -3,6 +3,7 @@
  * @date           2024-09-24
  *
  * @submit         01:43:43
+ * @revision       00:04:03
  */
 
 
@@ -170,6 +171,8 @@ void Spray()
 			}
 		}
 	}
+
+	if (cmp == 0) return;
 
 	fill(&vis[0][0], &vis[N][N], false);
 	vis[tx][ty] = true;
