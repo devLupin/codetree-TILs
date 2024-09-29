@@ -3,6 +3,7 @@
  * @date           2024-09-29
  *
  * @submit         01:01:43
+ * @revision       00:03:16
  */
 
 
@@ -143,7 +144,7 @@ void RotateBoard()
 			board[i][j] = nxtBoard[i][j];
 }
 
-void Solve()
+void Solve(int cnt)
 {
 	Init();
 
@@ -152,7 +153,9 @@ void Solve()
 			if (!vis[i][j]) MakeGroup(i, j);
 
 	CalcArtistry();
-	RotateBoard();
+
+	if(cnt < 3)
+		RotateBoard();
 }
 
 int main(void)
@@ -168,7 +171,7 @@ int main(void)
 			cin >> board[i][j];
 
 	for(int i=0; i<4; i++)
-		Solve();
+		Solve(i);
 
 	cout << ans;
 	return 0;
