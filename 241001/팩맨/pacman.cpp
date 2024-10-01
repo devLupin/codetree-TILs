@@ -3,6 +3,7 @@
  * @date           2024-10-01
  *
  * @submit         00:53:18
+ * @revision	   00:29:47
  */
 
 
@@ -19,7 +20,6 @@ const int DIR_NUM = 8;
 const int MAX_T = 30;
 const int MAX_N = 4;
 
-// ↑, ↖, ←, ↙, ↓, ↘, →, ↗
 const int dx[DIR_NUM] = { -1,-1,0,1,1,1,0,-1 };
 const int dy[DIR_NUM] = { 0,-1,-1,-1,0,1,1,1 };
 const int pdx[] = { -1,0,1,0 };
@@ -29,7 +29,6 @@ int M, T, px, py;
 int corpse[MAX_N][MAX_N];
 int board[MAX_T][MAX_N][MAX_N][DIR_NUM];
 
-// for packman move
 int cmp = 0;
 vector<int> bestRoute;
 bool eat[MAX_N + 1][MAX_N + 1];
@@ -47,7 +46,8 @@ void Print(int t)
 			for (int dir = 0; dir < DIR_NUM; dir++)
 				cnt += board[t][x][y][dir];
 
-			cout << cnt << ' ';
+			if (x == px && y == py)cout << 'P' << ' ';
+			else cout << cnt << ' ';
 		}
 		cout << '\n';
 	}
@@ -60,6 +60,8 @@ void MoveMonster(int t)
 		for (int y = 0; y < MAX_N; y++)
 			for (int dir = 0; dir < DIR_NUM; dir++)
 			{
+				if (board[t - 1][x][y][dir] == 0) continue;
+
 				int nDir = dir;
 
 				for (int i = 0; i < DIR_NUM; i++)
@@ -97,19 +99,27 @@ void DFS(int t, int x, int y, int sum, vector<int> dirs)
 
 		if (!OOM(nx, ny))
 		{
-			int val = 0;
 
 			if (!eat[nx][ny])
 			{
+				int val = 0;
+
 				for (int mDir = 0; mDir < DIR_NUM; mDir++)
 					val += board[t][nx][ny][mDir];
+
+				dirs.push_back(dir);
+				eat[nx][ny] = true;
+				DFS(t, nx, ny, sum + val, dirs);
+				eat[nx][ny] = false;
+				dirs.pop_back();
 			}
 
-			dirs.push_back(dir);
-			eat[nx][ny] = true;
-			DFS(t, nx, ny, sum + val, dirs);
-			eat[nx][ny] = false;
-			dirs.pop_back();
+			else
+			{
+				dirs.push_back(dir);
+				DFS(t, nx, ny, sum, dirs);
+				dirs.pop_back();
+			}
 		}
 	}
 }
@@ -126,7 +136,7 @@ void MovePackMan(int t)
 		for (int dir = 0; dir < DIR_NUM; dir++)
 			board[t][px][py][dir] = 0;
 
-		corpse[px][py] = 2;
+		corpse[px][py] = 3;
 	}
 }
 
@@ -180,6 +190,6 @@ int main(void) {
 			for (int dir = 0; dir < DIR_NUM; dir++)
 				ans += board[T][x][y][dir];
 
-	cout << ans << ' ';
+	cout << ans;
 	return 0;
 }
