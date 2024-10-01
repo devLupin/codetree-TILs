@@ -30,7 +30,7 @@ int M, T, px, py;
 int corpse[MAX_N][MAX_N];
 int board[MAX_T][MAX_N][MAX_N][DIR_NUM];
 
-int cmp = 0;
+int cmp = -1;
 vector<int> bestRoute;
 bool eat[MAX_N + 1][MAX_N + 1];
 
