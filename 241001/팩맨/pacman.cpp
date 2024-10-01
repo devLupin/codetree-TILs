@@ -20,6 +20,7 @@ const int DIR_NUM = 8;
 const int MAX_T = 30;
 const int MAX_N = 4;
 
+// ↑, ↖, ←, ↙, ↓, ↘, →, ↗
 const int dx[DIR_NUM] = { -1,-1,0,1,1,1,0,-1 };
 const int dy[DIR_NUM] = { 0,-1,-1,-1,0,1,1,1 };
 const int pdx[] = { -1,0,1,0 };
@@ -29,6 +30,7 @@ int M, T, px, py;
 int corpse[MAX_N][MAX_N];
 int board[MAX_T][MAX_N][MAX_N][DIR_NUM];
 
+// for packman move
 int cmp = 0;
 vector<int> bestRoute;
 bool eat[MAX_N + 1][MAX_N + 1];
@@ -136,7 +138,7 @@ void MovePackMan(int t)
 		for (int dir = 0; dir < DIR_NUM; dir++)
 			board[t][px][py][dir] = 0;
 
-		corpse[px][py] = 3;
+		corpse[px][py] = 2;
 	}
 }
 
