@@ -4,7 +4,7 @@
  *
  * @submit         00:53:18
  * @revision	   00:29:47
- * @revision	   00:14:15
+ * @revision	   00:16:24
  */
 
 
@@ -21,7 +21,6 @@ const int DIR_NUM = 8;
 const int MAX_T = 30;
 const int MAX_N = 4;
 
-// ↑, ↖, ←, ↙, ↓, ↘, →, ↗
 const int dx[DIR_NUM] = { -1,-1,0,1,1,1,0,-1 };
 const int dy[DIR_NUM] = { 0,-1,-1,-1,0,1,1,1 };
 const int pdx[] = { -1,0,1,0 };
@@ -31,7 +30,6 @@ int M, T, px, py;
 int corpse[MAX_N][MAX_N];
 int board[MAX_T][MAX_N][MAX_N][DIR_NUM];
 
-// for packman move
 int cmp = 0;
 vector<int> bestRoute;
 bool eat[MAX_N + 1][MAX_N + 1];
@@ -49,8 +47,7 @@ void Print(int t)
 			for (int dir = 0; dir < DIR_NUM; dir++)
 				cnt += board[t][x][y][dir];
 
-			if (corpse[x][y] > 0) cout << 'X' << ' ';
-			else cout << cnt << ' ';
+			cout << cnt << ' ';
 		}
 		cout << '\n';
 	}
@@ -66,6 +63,7 @@ void MoveMonster(int t)
 				if (board[t - 1][x][y][dir] == 0) continue;
 
 				int nDir = dir;
+				bool flag = false;
 
 				for (int i = 0; i < DIR_NUM; i++)
 				{
@@ -76,9 +74,12 @@ void MoveMonster(int t)
 					if (!OOM(nx, ny) && corpse[nx][ny] == 0 && make_pair(px, py) != make_pair(nx, ny))
 					{
 						board[t][nx][ny][d] += board[t - 1][x][y][dir];
+						flag = true;
 						break;
 					}
 				}
+
+				if (!flag)board[t][x][y][dir] += board[t - 1][x][y][dir];
 			}
 }
 
