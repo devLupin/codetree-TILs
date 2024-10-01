@@ -4,6 +4,7 @@
  *
  * @submit         00:53:18
  * @revision	   00:29:47
+ * @revision	   00:14:15
  */
 
 
@@ -48,7 +49,7 @@ void Print(int t)
 			for (int dir = 0; dir < DIR_NUM; dir++)
 				cnt += board[t][x][y][dir];
 
-			if (x == px && y == py)cout << 'P' << ' ';
+			if (corpse[x][y] > 0) cout << 'X' << ' ';
 			else cout << cnt << ' ';
 		}
 		cout << '\n';
@@ -136,9 +137,13 @@ void MovePackMan(int t)
 		py += pdy[d];
 
 		for (int dir = 0; dir < DIR_NUM; dir++)
-			board[t][px][py][dir] = 0;
-
-		corpse[px][py] = 2;
+		{
+			if (board[t][px][py][dir] > 0)
+			{
+				corpse[px][py] = 3;
+				board[t][px][py][dir] = 0;
+			}			
+		}
 	}
 }
 
