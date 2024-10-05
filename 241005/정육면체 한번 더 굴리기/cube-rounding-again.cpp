@@ -3,6 +3,7 @@
  * @date           2024-10-05
  *
  * @submit         00:34:03
+ * @revision       00:03:32
  */
 
 
@@ -80,6 +81,8 @@ void ChangeDir()
 		diceDir = (diceDir + 1) % 4;
 	else if (dice[1] < board[diceX][diceY])
 		diceDir = (diceDir + 3) % 4;
+	if (OOM(diceX + dx[diceDir], diceY + dy[diceDir]))
+		diceDir = (diceDir + 2) % 4;
 }
 
 int main(void) {
