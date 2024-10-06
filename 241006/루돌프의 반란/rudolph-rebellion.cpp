@@ -2,11 +2,14 @@
  * @author         lupin
  * @date           2024-10-06
  *
- * @submit         01:13:58
+ * @submit         01:12:58
+ * @submit         00:01:30
  */
 
 
+#define _CRT_SECURE_NO_WARNINGS
 #include <bits/stdc++.h>
+#pragma warning(suppress : 6031)
 #define X first
 #define Y second
 using namespace std;
@@ -26,6 +29,17 @@ pii santaPos[MAX_P];
 bool escape[MAX_P];
 int stun[MAX_P];
 
+
+void Print()
+{
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+			cout << board[i][j] << ' ';
+		cout << '\n';
+	}
+	cout << "\n\n";
+}
 
 bool OOM(int x, int y) { return x < 0 || y < 0 || x >= N || y >= N; }
 
@@ -161,18 +175,25 @@ void MoveSanta()
 	}
 }
 
-void Done()
+bool Done()
 {
+	bool ret = false;
+
 	for (int i = 1; i <= P; i++)
 	{
 		stun[i] = max(0, stun[i] - 1);
 		score[i] += !escape[i];
+		if (!escape[i]) ret = true;
 	}
+
+	return ret;
 }
 
 int main(void) {
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
+
+	// auto f = freopen("input.txt", "r", stdin);
 
 	cin >> N >> M >> P >> C >> D;
 	cin >> rx >> ry;
@@ -190,7 +211,7 @@ int main(void) {
 	{
 		MoveRudolf();
 		MoveSanta();
-		Done();
+		if(!Done()) break;
 	}
 
 	for (int i = 1; i <= P; i++)
