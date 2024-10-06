@@ -4,6 +4,7 @@
  *
  * @submit         01:12:58
  * @submit         00:01:30
+ * @submit         00:06:35
  */
 
 
@@ -54,41 +55,47 @@ void Crash(int snum, int ddx, int ddy, int cnt)
 	board[nx][ny] = 0;
 	st.push(snum);
 
-	while (cnt--)
+	nx += ddx * cnt;
+	ny += ddy * cnt;
+
+	if (OOM(nx, ny))
 	{
-		nx += ddx;
-		ny += ddy;
-
-		if (OOM(nx, ny)) break;
-
-		int num = board[nx][ny];
-		if (num > 0)
-		{
-			st.push(num);
-			board[nx][ny] = 0;
-			cnt++;
-		}
+		escape[snum] = true;
+		return;
 	}
-
-	while (!st.empty())
+	else if (board[nx][ny] == 0)
 	{
-		int num = st.top();
-		auto [x, y] = santaPos[num];
-		st.pop();
-
-		if (OOM(nx, ny))
+		board[nx][ny] = snum;
+		santaPos[snum] = make_pair(nx, ny);
+	}
+	else
+	{
+		while (!OOM(nx, ny) && board[nx][ny] > 0)
 		{
-			board[x][y] = 0;
-			escape[num] = true;
-		}
-		else
-		{
-			board[nx][ny] = num;
-			santaPos[num] = make_pair(nx, ny);
+			st.push(board[nx][ny]);
+			board[nx][ny] = 0;
+			
+			nx += ddx;
+			ny += ddy;
 		}
 
-		nx -= ddx;
-		ny -= ddy;
+		while (!st.empty())
+		{
+			int num = st.top();
+			auto [x, y] = santaPos[num];
+			st.pop();
+
+			if (OOM(nx, ny))
+				escape[num] = true;
+			else
+			{
+				board[nx][ny] = num;
+				santaPos[num] = make_pair(nx, ny);
+			}
+
+			nx -= ddx;
+			ny -= ddy;
+		}
 	}
 }
 
@@ -211,11 +218,11 @@ int main(void) {
 	{
 		MoveRudolf();
 		MoveSanta();
-		if(!Done()) break;
+		if (!Done()) break;
 	}
 
 	for (int i = 1; i <= P; i++)
 		cout << score[i] << ' ';
-	
+
 	return 0;
 }
