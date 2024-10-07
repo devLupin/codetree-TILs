@@ -1,8 +1,9 @@
 /**
  * @author         lupin
- * @date           2024-10-07
+ * @date           2024-10-08
  *
- * @submit         00:44:57
+ * @submit         00:53:27
+ * @revision       00:13:13
  */
 
 
@@ -106,14 +107,16 @@ int FirstTurn()
 	vector<vector<int>> bestBoard;
 	int cnt = 0;
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 1; i <= 3; i++)
 	{
 		for (int x = 0; x < 3; x++)
 		{
 			for (int y = 0; y < 3; y++)
 			{
 				nextBoard = board;
-				Rotate(x, y, 3);
+				for (int j = 0; j < i; j++)
+					Rotate(x, y, 3);
+
 				vector<pii> result = GetArtifact();
 				int sz = result.size();
 
@@ -155,7 +158,6 @@ int SecondTurn()
 		sz += rmPos.size();
 	}
 
-	board = nextBoard;
 	return sz;
 }
 
