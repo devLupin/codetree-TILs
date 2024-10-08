@@ -2,192 +2,160 @@
  * @author         lupin
  * @date           2024-10-08
  *
- * @submit         00:53:27
- * @revision       00:13:13
+ * @submit         00:55:07
  */
 
 
 #define _CRT_SECURE_NO_WARNINGS
-#include <bits/stdc++.h>
-#pragma warning(suppress : 6031)
+#include <queue>
+#include <iostream>
+#include <algorithm>
 #define X first
 #define Y second
 using namespace std;
 using pii = pair<int, int>;
-using tiii = tuple<int, int, int>;
 
 const int dx[] = { -1,1,0,0 };
 const int dy[] = { 0,0,-1,1 };
 
 int K, M;
-vector<vector<int>> board;
-vector<vector<int>> nextBoard;
-bool vis[7][7];
-vector<int> artifact;
-int artifactIdx;
 
-bool OOM(int x, int y) { return x < 0 || y < 0 || x >= 5 || y >= 5; }
+class Board {
+	vector<vector<int>> map, nxt;
+	queue<int> art;
 
-vector<pii> BFS(int sx, int sy)
-{
-	vector<pii> ret;
-	queue<pii> q;
+public:
+	Board() { map.assign(5, vector<int>(5, 0)); }
 
-	q.push(make_pair(sx, sy));
-	vis[sx][sy] = true;
+	void print() {
+		for (int i = 0; i < 5; i++) {
+			for (int j = 0; j < 5; j++)
+				cout << nxt[i][j] << ' ';
+			cout << '\n';
+		}
+		cout << "\n\n";
+	}
 
-	while (!q.empty())
-	{
-		auto [x, y] = q.front();
-		q.pop();
+	void input() {
+		for (int i = 0; i < 5; i++)
+			for (int j = 0; j < 5; j++)
+				cin >> map[i][j];
 
-		ret.push_back(make_pair(x, y));
-
-		for (int dir = 0; dir < 4; dir++)
-		{
-			int nx = x + dx[dir];
-			int ny = y + dy[dir];
-
-			if (!OOM(nx, ny) && !vis[nx][ny] && nextBoard[x][y] == nextBoard[nx][ny])
-			{
-				q.push(make_pair(nx, ny));
-				vis[nx][ny] = true;
-			}
+		for (int x, i = 0; i < M; i++) {
+			cin >> x;
+			art.push(x);
 		}
 	}
 
-	return ret;
-}
+	void rotate(int sx, int sy, int sz) {
+		auto tmp = nxt;
 
-vector<pii> GetArtifact()
-{
-	vector<pii> ret;
+		for (int x = sx; x < sx + sz; x++) {
+			for (int y = sy; y < sy + sz; y++) {
+				int nx = y - sy;
+				int ny = sz - (x - sx) - 1;
+				tmp[nx + sx][ny + sy] = nxt[x][y];
+			}
+		}
 
-	fill(&vis[0][0], &vis[5][5], false);
+		nxt = tmp;
+	}
 
-	for (int x = 0; x < 5; x++)
+	int BFS() {
+		bool vis[5][5] = { false, };
+		int ret = 0;
+
+		for (int x = 0; x < 5; x++)
+			for (int y = 0; y < 5; y++)
+				if (!vis[x][y] && nxt[x][y]) {
+					vector<pii> v;
+					queue<pii> q;
+					int cmp = nxt[x][y];
+
+					q.push({ x, y });
+					vis[x][y] = true;
+
+					while (!q.empty()) {
+						pii cur = q.front();
+						q.pop();
+
+						v.push_back(cur);
+
+						for (int dir = 0; dir < 4; dir++) {
+							int nx = cur.X + dx[dir];
+							int ny = cur.Y + dy[dir];
+
+							if (nx < 0 || ny < 0 || nx >= 5 || ny >= 5) continue;
+							if (vis[nx][ny] || nxt[nx][ny] != cmp) continue;
+
+							q.push({ nx, ny });
+							vis[nx][ny] = true;
+						}
+					}
+
+					if (v.size() >= 3) {
+						for (pii& pos : v) nxt[pos.X][pos.Y] = 0;
+						ret += v.size();
+					}
+				}
+
+		return ret;
+	}
+
+	void fill() {
 		for (int y = 0; y < 5; y++)
-			if (!vis[x][y])
-			{
-				vector<pii> pos = BFS(x, y);
-				if (pos.size() >= 3)
-				{
-					for (const pii& nxt : pos)
-						ret.push_back(nxt);
+			for (int x = 4; x >= 0; x--)
+				if (nxt[x][y] == 0) {
+					nxt[x][y] = art.front();
+					art.pop();
 				}
-			}
+	}
 
-	return ret;
-}
+	int select() {
+		vector<vector<int>> best = map;
+		int cmp = 0;
 
-void Rotate(int sx, int sy, int sz)
-{
-	vector<vector<int>> temp = nextBoard;
-
-	for (int x = sx; x < sx + sz; x++)
-		for (int y = sy; y < sy + sz; y++)
-		{
-			int nx = y - sy;
-			int ny = sz - (x - sx) - 1;
-			temp[nx + sx][ny + sy] = nextBoard[x][y];
-		}
-
-	nextBoard = temp;
-}
-
-bool compare(const pii& a, const pii& b)
-{
-	if (a.Y != b.Y) return a.Y < b.Y;
-	return a.X > b.X;
-}
-
-int FirstTurn()
-{
-	vector<pii> rmPos;
-	vector<vector<int>> bestBoard;
-	int cnt = 0;
-
-	for (int i = 1; i <= 3; i++)
-	{
-		for (int x = 0; x < 3; x++)
-		{
+		for (int i = 1; i <= 3; i++)
 			for (int y = 0; y < 3; y++)
-			{
-				nextBoard = board;
-				for (int j = 0; j < i; j++)
-					Rotate(x, y, 3);
+				for (int x = 0; x < 3; x++) {
+					nxt = map;
 
-				vector<pii> result = GetArtifact();
-				int sz = result.size();
+					for (int j = 0; j < i; j++)
+						rotate(x, y, 3);
 
-				if (cnt < sz)
-				{
-					bestBoard = nextBoard;
-					cnt = sz;
-					rmPos = result;
+					int tmp = BFS();
+					if (cmp < tmp) {
+						best = nxt;
+						cmp = tmp;
+					}
 				}
-			}
-		}
+
+		nxt = best;
+		return cmp;
 	}
 
-	sort(rmPos.begin(), rmPos.end(), compare);
-
-	for (const pii& nxt : rmPos)
-		bestBoard[nxt.X][nxt.Y] = artifact[artifactIdx++];
-
-	board = bestBoard;
-	return rmPos.size();
-}
-
-int SecondTurn()
-{
-	int sz = 0;
-
-	while (true)
-	{
-		nextBoard = board;
-
-		auto rmPos = GetArtifact();
-		if (rmPos.empty()) break;
-
-		sort(rmPos.begin(), rmPos.end(), compare);
-
-		for (const pii& nxt : rmPos)
-			board[nxt.X][nxt.Y] = artifact[artifactIdx++];
-
-		sz += rmPos.size();
-	}
-
-	return sz;
-}
+	void done() { map = nxt; }
+};
 
 int main(void) {
-	ios::sync_with_stdio(false);
-	cin.tie(NULL);
-
-	// auto f = freopen("input.txt", "r", stdin);
-
-	board.assign(5, vector<int>(5));
-
+	// freopen("input.txt", "r", stdin);
 	cin >> K >> M;
 
-	for (int i = 0; i < 5; i++)
-		for (int j = 0; j < 5; j++)
-			cin >> board[i][j];
+	Board board;
+	board.input();
 
-	for (int a; M--;)
-	{
-		cin >> a;
-		artifact.push_back(a);
-	}
+	while (K--) {
+		int ans = board.select();
+		if (ans == 0) break;
 
-	while (K--)
-	{
-		int a = FirstTurn();
-		if (a == 0) break;
-		int b = SecondTurn();
-		cout << a + b << ' ';
-
+		while (true) {
+			board.fill();
+			int new_ans = board.BFS();
+			if (new_ans == 0) break;
+			ans += new_ans;
+		}
+		cout << ans << " ";
+		board.done();
 	}
 
 	return 0;
