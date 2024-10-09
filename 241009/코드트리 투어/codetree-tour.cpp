@@ -67,8 +67,18 @@ void Q400()
 {
 	int id = -1;
 
-	Info cur = product.top();
-	product.pop();
+	Info cur;
+
+	if (!product.empty())
+	{
+		cur = product.top();
+		product.pop();
+	}
+	else
+	{
+		cout << -1 << '\n';
+		return;
+	}
 
 	if (isExist[cur.id] < 1)
 	{
