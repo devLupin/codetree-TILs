@@ -2,7 +2,8 @@
  * @author         lupin
  * @date           2024-10-09
  *
- * @submit         00:46:38
+ * @submit         01:02:38
+ * @revision       00:26:15
  */
 
 
@@ -38,7 +39,7 @@ void Print()
 	cout << "\n\n";
 }
 
-bool OOM(int x, int y) { return x < 0 || y < 0 || x >= N && y >= N; }
+bool OOM(int x, int y) { return x < 0 || y < 0 || x >= N || y >= N; }
 
 void BFS(int sx, int sy)
 {
@@ -108,7 +109,7 @@ void Move()
 		int cnt = groupCnt[i] - 2;
 		int sz = cur.size();
 
-		auto& [x, y] = cur[0];
+		auto [x, y] = cur[0];
 		board[x][y] = 1;
 
 		for (int j = 1; j < cnt + 1; j++)
@@ -142,6 +143,28 @@ void Calc()
 	else if (tDir == 3) tie(attackX, attackY) = make_pair(0, N - t - 1);
 }
 
+void ChangeHead(int idx)
+{
+	auto& target = group[idx];
+	int sz = groupCnt[idx];
+	int cnt = sz - 2;
+
+	reverse(target.begin(), target.begin() + sz);
+	reverse(target.begin() + sz, target.end());
+
+	auto [x, y] = target[0];
+	board[x][y] = 1;
+
+	for (int j = 1; j < cnt + 1; j++)
+	{
+		tie(x, y) = target[j];
+		board[x][y] = 2;
+	}
+
+	tie(x, y) = target[cnt + 1];
+	board[x][y] = 3;
+}
+
 void Round()
 {
 	Calc();
@@ -151,18 +174,24 @@ void Round()
 
 	while (!OOM(x, y))
 	{
-		int cur = board[x][y];
-		
-		if (cur > 0 && cur < 4)
+		int val = board[x][y];
+
+		if (val > 0 && val < 4)
 		{
-			for(const auto& g : group)
-				for(int i=0; i< g.size(); i++)
-					if (make_pair(x, y) == make_pair(g[i].X, g[i].Y))
+			for (int g = 0; g < group.size(); g++) 
+			{
+				const auto& cur = group[g];
+				for (int i = 0; i < cur.size(); i++)
+				{
+					if (make_pair(x, y) == make_pair(cur[i].X, cur[i].Y))
 					{
+						ChangeHead(g);
 						i++;
 						ans += i * i;
 						return;
 					}
+				}
+			}
 		}
 
 		x += dx[tDir];
