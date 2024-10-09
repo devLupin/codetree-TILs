@@ -70,6 +70,17 @@ void Q400()
 	Info cur = product.top();
 	product.pop();
 
+	if (isExist[cur.id] < 1)
+	{
+		if(!product.empty())
+			cur = product.top();
+		else
+		{
+			cout << -1 << '\n';
+			return;
+		}
+	}
+
 	if (cur.revenue - cur.d < 0 || cur.d == INF)
 		product.push(cur);
 
