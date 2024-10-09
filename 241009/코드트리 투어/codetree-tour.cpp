@@ -67,23 +67,16 @@ void Q400()
 {
 	int id = -1;
 
-	while (!product.empty())
+	Info cur = product.top();
+	product.pop();
+
+	if (cur.revenue - cur.d < 0 || cur.d == INF)
+		product.push(cur);
+
+	else if (isExist[cur.id] > 0)
 	{
-		Info cur = product.top();
-		product.pop();
-
-		if (isExist[cur.id] < 1) continue;
-
-		if (cur.revenue - cur.d < 0 || cur.d == INF)
-			product.push(cur);
-
-		else if (isExist[cur.id] > 0)
-		{
-			id = cur.id;
-			isExist[cur.id] = 0;
-		}
-
-		break;
+		id = cur.id;
+		isExist[cur.id] = 0;
 	}
 
 	cout << id << '\n';
