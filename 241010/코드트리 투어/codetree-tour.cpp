@@ -97,7 +97,7 @@ void Dijkstra(int s)
 
 		if (uDist > dist[u]) continue;
 
-		for (auto [vDist, v] : adj[u])
+		for (auto [v, vDist] : adj[u])
 		{
 			int cmp = vDist + uDist;
 
