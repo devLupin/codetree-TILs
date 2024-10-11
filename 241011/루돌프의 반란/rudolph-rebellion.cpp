@@ -3,6 +3,7 @@
  * @date           2024-10-11
  *
  * @submit         00:44:34
+ * @revision       00:07:34
  */
 
 
@@ -113,7 +114,7 @@ void MoveRudolf()
 	auto [d, x, y] = v[0];
 	x *= -1, y *= -1;
 
-	int nDir, cmp = Distance(rx, ry, x, y);
+	int nDir = -1, cmp = Distance(rx, ry, x, y);
 
 	for (int dir = 0; dir < 8; dir++)
 	{
