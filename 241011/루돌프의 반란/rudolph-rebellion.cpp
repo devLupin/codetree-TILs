@@ -4,6 +4,7 @@
  *
  * @submit         00:44:34
  * @revision       00:07:34
+ * @revision       00:15:34
  */
 
 
@@ -67,7 +68,7 @@ void Collision(int num, int ddx, int ddy, int cnt)
 		stack<int> st;
 		st.push(num);
 
-		while (board[nx][ny] != 0)
+		while (!OOM(nx, ny) && board[nx][ny] != 0)
 		{
 			st.push(board[nx][ny]);
 			board[nx][ny] = 0;
