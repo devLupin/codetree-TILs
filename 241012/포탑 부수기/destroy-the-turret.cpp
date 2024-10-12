@@ -4,6 +4,7 @@
  *
  * @submit         00:54:28
  * @revision       00:05:32
+ * @revision       00:21:33
  */
 
 
@@ -77,7 +78,7 @@ pii Adjust(int x, int y)
 {
 	if (x == N) x = 0;
 	else if (x == -1) x = N - 1;
-	if (y == N) y = 0;
+	if (y == M) y = 0;
 	else if (y == -1) y = M - 1;
 
 	return make_pair(x, y);
@@ -92,7 +93,7 @@ bool CanLazerAttack()
 	while (!q.empty())
 	{
 		auto [x, y] = q.front();
-		q.pop();
+ 		q.pop();
 
 		if (make_pair(x, y) == strong)
 			return true;
