@@ -3,6 +3,7 @@
  * @date           2024-10-12
  *
  * @submit         00:58:32
+ * @revision       00:13:13
  */
 
 
@@ -71,7 +72,7 @@ int BFS(int srcX, int srcY, int dstX, int dstY)
 
 void Enter(int t)
 {
-	if (conv.size() <= t) return;
+	if (M < t) return;
 
 	const auto [cx, cy] = conv[t];
 	int x, y, cmp = 999999;
@@ -108,7 +109,7 @@ void Move(int t)
 		{
 			int nx = srcX + dx[dir];
 			int ny = srcY + dy[dir];
-			if (OOM(nx, ny)) continue;
+			if (OOM(nx, ny) || arrived[nx][ny]) continue;
 
 			int nd = BFS(nx, ny, dstX, dstY);
 
