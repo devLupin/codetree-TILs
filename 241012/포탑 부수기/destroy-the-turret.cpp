@@ -2,7 +2,8 @@
  * @author         lupin
  * @date           2024-10-12
  *
- * @submit         00:38:40
+ * @submit         00:54:28
+ * @revision       00:05:32
  */
 
 
@@ -136,7 +137,6 @@ void BombAttack(int p)
 void Attack()
 {
 	int p = board[weak.X][weak.Y] / 2;
-	board[strong.X][strong.Y] -= board[weak.X][weak.Y];
 
 	isAttack[weak.X][weak.Y] = true;
 	isAttack[strong.X][strong.Y] = true;
@@ -157,6 +157,8 @@ void Attack()
 		}
 	}
 	else BombAttack(p);
+
+	board[strong.X][strong.Y] -= board[weak.X][weak.Y];
 }
 
 void Done()
