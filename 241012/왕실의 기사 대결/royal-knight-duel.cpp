@@ -3,6 +3,7 @@
  * @date           2024-10-12
  *
  * @submit         00:54:28
+ * @revision       00:05:01
  */
 
 
@@ -30,7 +31,7 @@ int board[MAX_L][MAX_L];
 vector<vector<int>> chess;
 bool vis[MAX_L][MAX_L];
 Info knights[MAX_N];
-int hp[MAX_N];
+int hp[MAX_N], nxtHP[MAX_N];
 bool die[MAX_N];
 
 bool OOM(int x, int y) { return x < 0 || y < 0 || x >= L || y >= L; }
@@ -137,12 +138,12 @@ void MoveKnights(int num, int dir)
 			if (curHp <= 0)
 			{
 				die[cur] = true;
-				hp[cur] = 0;
+				nxtHP[cur] = 0;
 			}
 			else
 			{
 				int diff = hp[cur] - curHp;
-				ans += diff;
+				nxtHP[cur] += diff;
 				hp[cur] -= diff;
 			}
 		}
@@ -175,6 +176,9 @@ int main(void)
 		cin >> i >> d;
 		MoveKnights(i, d);
 	}
+
+	for (int i = 1; i <= N; i++)
+		ans += nxtHP[i];
 
 	cout << ans;
 	return 0;
