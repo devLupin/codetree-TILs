@@ -153,9 +153,13 @@ int Bfs(int sx, int sy)
 
 void Move(int x, int y, int d, int i)
 {	
+	if (flag) return;
 	if (MoveDown(x, y)) Move(x, y, d, i);
+	if (flag) return;
 	if (MoveLeft(x, y, d)) Move(x, y, d, i);
+	if (flag) return;
 	if (MoveRight(x, y, d)) Move(x, y, d, i);
+	if (flag) return;
 
 	if (!flag)
 	{
