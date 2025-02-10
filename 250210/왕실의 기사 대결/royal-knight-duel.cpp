@@ -28,7 +28,7 @@ struct _info
 {
 	int r, c, h, w;
 }Info[MAX_N];
-int hp[MAX_N];
+int hp[MAX_N], hpOrigin[MAX_N];
 
 int ans, knight[MAX_L][MAX_L], board[MAX_L][MAX_L];
 
@@ -126,17 +126,12 @@ void CalcDamage(set<int> st, int num)
 	for (const int& nxt : st)
 	{
 		if (nxt == num) continue;
-		int temp = hp[nxt];
 		const auto& [r, c, h, w] = Info[nxt];
 		
 		for (int x = r; x < r + h; x++)
 			for (int y = c; y < c + w; y++)
 				if (board[x][y] == PIT)
-				{
 					hp[nxt]--;
-					if (hp[nxt] >= 0) ans++;
-				}
-		if (hp[nxt] <= 0) ans -= temp;
 	}
 }
 
@@ -157,6 +152,7 @@ int main(void)
 		cin >> r >> c >> h >> w >> k;
 		Info[i] = { r,c,h,w };
 		hp[i] = k;
+		hpOrigin[i] = k;
 	}
 
 	while (Q--)
@@ -169,6 +165,12 @@ int main(void)
 		auto ret = CanPushKnight(i, d);
 		PushKnight(ret, d);
 		CalcDamage(ret, i);
+	}
+
+	for (int i = 1; i <= N; i++)
+	{
+		if (hp[i] <= 0) continue;
+		ans += (hpOrigin[i] - hp[i]);
 	}
 
 	cout << ans;
