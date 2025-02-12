@@ -80,29 +80,25 @@ set<int> CanMoveChess(int num, int ddir)
 		auto [x, y] = q.front();
 		q.pop();
 
-		if (board[x][y] == WALL) return {};
-		if (OOM(x + dx[ddir], y + dy[ddir]) || board[x + dx[ddir]][y + dy[ddir]] == WALL) return {};
-
 		st.insert(chess[x][y]);
-
-		for (int dir = 0; dir < 4; dir++)
-		{
-			int nx = x + dx[dir];
-			int ny = y + dy[dir];
-
-			if (OOM(nx, ny) || visited[nx][ny]) continue;
-			if (chess[x][y] == chess[nx][ny])
-			{
-				q.push({ nx, ny });
-				visited[nx][ny] = true;
-			}
-		}
 
 		int nx = x + dx[ddir];
 		int ny = y + dy[ddir];
 
-		if (!OOM(nx, ny) && !visited[nx][ny] && chess[nx][ny] > 0)
+		if (OOM(nx, ny) || board[nx][ny] == WALL) return {};
+		if (chess[nx][ny] > 0)
 		{
+			q.push({ nx, ny });
+			visited[nx][ny] = true;
+		}
+
+		for (int dir = 0; dir < 4; dir++)
+		{
+			nx = x + dx[dir];
+			ny = y + dy[dir];
+
+			if (OOM(nx, ny) || visited[nx][ny] || chess[x][y] != chess[nx][ny]) continue;
+
 			q.push({ nx, ny });
 			visited[nx][ny] = true;
 		}
