@@ -54,8 +54,8 @@ void DrawChess()
 
 void CleanChess()
 {
-	fill(&chess[1][1], &chess[L][L], 0);
-	fill(&visited[1][1], &visited[L][L], false);
+	fill(&chess[1][1], &chess[L + 1][L + 1], 0);
+	fill(&visited[1][1], &visited[L + 1][L + 1], false);
 }
 
 bool OOM(int x, int y) { return x < 1 || y < 1 || x > L || y > L; }
@@ -135,7 +135,7 @@ int main(void)
 	ios::sync_with_stdio(false);
 	cin.tie(NULL);
 
-	// auto f = freopen("input.txt", "r", stdin);
+	//  auto f = freopen("input.txt", "r", stdin);
 	cin >> L >> N >> Q;
 
 	for (int i = 1; i <= L; i++)
