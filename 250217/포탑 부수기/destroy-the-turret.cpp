@@ -3,6 +3,7 @@
  * @date           2025-02-17
  *
  * @submit         00:48:06
+ * @revision       00:08:16
  */
 
 
@@ -56,7 +57,7 @@ bool SortInfo(pii& src, pii& dst, int t)
 			if(board[i][j] > 0)
 				v.push_back({ i, j, turn[i][j], board[i][j] });
 
-	if (v.size() < 3) return false;
+	if (v.size() < 2) return false;
 
 	sort(v.begin(), v.end(), Compare);
 
@@ -115,6 +116,7 @@ void LazerAttack(const pii& src, const pii& dst)
 {
 	auto [x, y] = dst;
 	int pt = board[src.X][src.Y] / 2;
+	int dstOriginAtt = board[dst.X][dst.Y];
 	isAttack[src.X][src.Y] = true;
 
 	while (make_pair(x, y) != src)
@@ -128,7 +130,7 @@ void LazerAttack(const pii& src, const pii& dst)
 		tie(x, y) = make_pair(nx, ny);
 	}
 
-	board[dst.X][dst.Y] += pt - board[src.X][src.Y];
+	board[dst.X][dst.Y] = dstOriginAtt - board[src.X][src.Y];
 	board[dst.X][dst.Y] = max(0, board[dst.X][dst.Y]);
 }
 
