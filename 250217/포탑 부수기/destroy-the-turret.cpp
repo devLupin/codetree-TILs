@@ -47,7 +47,7 @@ bool Compare(const Info& a, const Info& b)
 	return a.y > b.y;
 }
 
-void SortInfo(pii& src, pii& dst, int t)
+bool SortInfo(pii& src, pii& dst, int t)
 {
 	vector<Info> v;
 
@@ -56,6 +56,8 @@ void SortInfo(pii& src, pii& dst, int t)
 			if(board[i][j] > 0)
 				v.push_back({ i, j, turn[i][j], board[i][j] });
 
+	if (v.size() < 3) return false;
+
 	sort(v.begin(), v.end(), Compare);
 
 	src = make_pair(v[0].x, v[0].y);
@@ -63,6 +65,8 @@ void SortInfo(pii& src, pii& dst, int t)
 	
 	board[src.X][src.Y] += N + M;
 	turn[src.X][src.Y] = t;
+
+	return true;
 }
 
 void AdjustPos(int& x, int& y)
@@ -186,7 +190,7 @@ int main(void)
 		Init();
 
 		pii src, dst;
-		SortInfo(src, dst, i);
+		if(!SortInfo(src, dst, i)) break;
 
 		if (CanLazerAttack(src, dst))
 			LazerAttack(src, dst);
